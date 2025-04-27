@@ -111,6 +111,8 @@ export const generateSimulatedData = (diseaseMean, diseaseStd, healthyMean, heal
   return { predictions, trueLabels };
 };
 
+
+
 // Function to find closest pair of values in TPR and FPR arrays
 export const findClosestPair = (tpr, fpr, targetTpr, targetFpr) => {
   let minDistance = Number.POSITIVE_INFINITY;
@@ -240,3 +242,454 @@ export const solveThreshold = (start, end, step, equationFunc) => {
   
   return bestX;
 };
+
+function maxRelativeSlopes(fprs, tprs) {
+  const n = tprs.length;
+  const maxSlopes = new Array(n).fill(0);  // To store the maximum slope for each point
+  const maxIndices = new Array(n).fill(0);  // To store the index of the other point for the max slope
+  
+  // Calculate the maximum slope from each point to every other point
+  for (let i = 0; i < n; i++) {
+      let maxSlope = -Infinity;
+      
+      for (let j = i + 1; j < n; j++) {
+          if ((fprs[j] > fprs[i]) || (tprs[j] > tprs[i])) {
+              const slope = (tprs[j] - tprs[i]) / ((fprs[j] - fprs[i]) + 0.00000000001);
+              if (slope >= maxSlope) {
+                  maxSlope = slope;
+                  maxIndices[i] = j;
+              }
+          }
+      }
+      
+      maxSlopes[i] = maxSlope;
+  }
+  
+  return [maxSlopes, maxIndices];
+}
+
+function cleanMaxRelativeSlopeIndex(indices, lenOfTpr) {
+  // Check if the indices array is empty
+  if (indices.length === 0) {
+      return [0, lenOfTpr - 1];
+  }
+  
+  const ordered = [0];  // Start with the first index as 0 (assuming it's the starting index)
+  
+  // Start with the first value from indices
+  let maxVal = indices[0];
+  ordered.push(maxVal);
+  
+  // Process the rest of the indices starting from the second element
+  for (let i = 1; i < indices.length; i++) {
+      if (indices[i] > maxVal) {
+          maxVal = indices[i];
+          ordered.push(maxVal);
+      } else {
+          ordered.push(maxVal);
+      }
+  }
+  
+  // Ensure the last index is included
+  if (ordered[ordered.length - 1] !== lenOfTpr - 1) {
+      ordered.push(lenOfTpr - 1);
+  }
+  
+  return ordered;
+}
+
+/**
+ * Deduplicate the exact points from FPRs and TPRs.
+ * @param {Array} fpr - Array of false positive rates.
+ * @param {Array} tpr - Array of true positive rates.
+ * @returns {Array} - Array containing deduplicated arrays [uniqueFpr, uniqueTpr].
+ */
+function deduplicateRocPoints(fpr, tpr) {
+  // Create a map to track unique points
+  const uniquePointsMap = new Map();
+  
+  // Combine points and track unique combinations
+  for (let i = 0; i < fpr.length; i++) {
+      // Use a string key for the map (e.g., "0.1,0.8")
+      const key = `${fpr[i]},${tpr[i]}`;
+      
+      // Store the actual values in the map
+      if (!uniquePointsMap.has(key)) {
+          uniquePointsMap.set(key, [fpr[i], tpr[i]]);
+      }
+  }
+  
+  // Extract unique points from the map
+  const uniquePoints = Array.from(uniquePointsMap.values());
+  
+  // Split the unique points back into separate FPR and TPR arrays
+  const uniqueFpr = uniquePoints.map(point => point[0]);
+  const uniqueTpr = uniquePoints.map(point => point[1]);
+  
+  return [uniqueFpr, uniqueTpr];
+}
+
+/**
+ * Optimized Bezier curve fitting focused on speed.
+ * 
+ * @param {Array} controlPoints - Control points array/list
+ * @param {Array} empiricalPoints - Points to fit the curve to
+ * @param {Array} initialWeights - Initial weights (optional)
+ * @param {number} maxTime - Maximum time in seconds
+ * @returns {Object} - Optimization result object
+ */
+function optimizeBezierFast(controlPoints, empiricalPoints, initialWeights = null, maxTime = 10) {
+  // Convert inputs to arrays if they aren't already
+  controlPoints = Array.isArray(controlPoints) ? controlPoints : Array.from(controlPoints);
+  empiricalPoints = Array.isArray(empiricalPoints) ? empiricalPoints : Array.from(empiricalPoints);
+  
+  const nControls = controlPoints.length;
+  
+  // Set default weights if none provided
+  if (initialWeights === null) {
+      initialWeights = Array(nControls).fill(1);
+  } else {
+      initialWeights = Array.isArray(initialWeights) ? initialWeights : Array.from(initialWeights);
+  }
+  
+  // Set bounds (weights should be positive)
+  const bounds = Array(nControls).fill(0).map(() => [0.1, 20.0]);
+  
+  // Create early termination callback
+  const callback = new SimpleEarlyTermination(maxTime);
+  
+  // Run optimization with a minimizer function
+  // Note: In JavaScript, we'd need to use an optimization library like numeric.js or ml-optimize
+  // This is a simplified placeholder for the minimize function
+  const result = minimize(
+      (weights) => errorFunctionSimple(weights, controlPoints, empiricalPoints),
+      initialWeights,
+      {
+          method: 'SLSQP',
+          bounds: bounds,
+          callback: callback,
+          options: {
+              maxiter: 100,
+              ftol: 1e-4,
+              disp: false
+          }
+      }
+  );
+  
+  // If the callback found a better solution than the final one
+  if (callback.bestValue < result.fun) {
+      result.x = callback.bestParams;
+      result.fun = callback.bestValue;
+  }
+  
+  return result;
+}
+
+/**
+* Early termination callback for optimization
+*/
+class SimpleEarlyTermination {
+  constructor(maxTime = 10, tolerance = 1e-4) {
+      this.bestValue = Infinity;
+      this.bestParams = null;
+      this.startTime = Date.now() / 1000; // Convert to seconds
+      this.maxTime = maxTime;
+      this.tolerance = tolerance;
+      this.iterationsWithoutImprovement = 0;
+  }
+  
+  call(xk, ...args) {
+      // Get current function value
+      let fVal;
+      if (args.length > 0 && args[0] && typeof args[0].fun !== 'undefined') {
+          fVal = args[0].fun;
+      } else {
+          return false;
+      }
+      
+      // Time-based termination
+      if ((Date.now() / 1000) - this.startTime > this.maxTime) {
+          if (this.bestParams !== null) {
+              // Copy best params to xk
+              this.bestParams.forEach((val, i) => xk[i] = val);
+          }
+          return true;
+      }
+      
+      // Track best solution
+      if (fVal < this.bestValue - this.tolerance) {
+          this.bestValue = fVal;
+          this.bestParams = [...xk]; // Create a copy
+          this.iterationsWithoutImprovement = 0;
+      } else {
+          this.iterationsWithoutImprovement += 1;
+      }
+      
+      // Terminate if no improvement for a while
+      if (this.iterationsWithoutImprovement >= 5) {
+          if (this.bestParams !== null) {
+              // Copy best params to xk
+              this.bestParams.forEach((val, i) => xk[i] = val);
+          }
+          return true;
+      }
+      
+      return false;
+  }
+}
+
+/**
+* Simple error function that focuses on performance.
+*/
+function errorFunctionSimple(weights, controlPoints, empiricalPoints) {
+  // Generate curve points
+  const curvePoints = rationalBezierCurveOptimized(controlPoints, weights);
+  
+  // Check if curvePoints is an array and handle it accordingly
+  if (!Array.isArray(curvePoints)) {
+    console.error("curvePoints is not an array:", curvePoints);
+    return Infinity; // Return a high error value if calculation fails
+  }
+  
+  // Calculate distances efficiently
+  const minDistances = empiricalPoints.map(point => {
+    // Make sure each curve point is accessible for distance calculation
+    return Math.min(...curvePoints.map(curvePoint => 
+      distance(point, curvePoint)
+    ));
+  });
+  
+  // Return mean distance
+  return minDistances.reduce((sum, dist) => sum + dist, 0) / minDistances.length;
+}
+
+/**
+* Calculate Euclidean distance between two points
+*/
+function distance(point1, point2) {
+  return Math.sqrt(
+      Math.pow(point1[0] - point2[0], 2) + 
+      Math.pow(point1[1] - point2[1], 2)
+  );
+}
+
+/**
+* Binomial coefficient calculation (n choose k)
+*/
+function binomialCoefficient(n, k) {
+  if (k < 0 || k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  
+  let result = 1;
+  for (let i = 1; i <= k; i++) {
+      result *= (n + 1 - i);
+      result /= i;
+  }
+  return result;
+}
+
+/**
+* Optimized rational Bezier curve calculation using JavaScript arrays.
+*/
+function rationalBezierCurveOptimized(controlPoints, weights, numPoints = 100) {
+  // Debug output
+  console.log("Control points:", controlPoints);
+  console.log("Weights:", weights);
+  console.log("Number of points:", numPoints);
+  
+  const n = controlPoints.length - 1;
+  const tValues = Array(numPoints).fill(0).map((_, i) => i / (numPoints - 1));
+  
+  // Ensure inputs are arrays
+  controlPoints = Array.isArray(controlPoints) ? controlPoints : Array.from(controlPoints);
+  weights = Array.isArray(weights) ? weights : Array.from(weights);
+  
+  // Preallocate results
+  const curvePoints = Array(numPoints).fill(0).map(() => [0, 0]);
+  
+  // For each point
+  for (let i = 0; i < tValues.length; i++) {
+    const t = tValues[i];
+    
+    // Calculate Bernstein basis
+    const basis = Array(n + 1).fill(0);
+    for (let j = 0; j <= n; j++) {
+      basis[j] = binomialCoefficient(n, j) * Math.pow(t, j) * Math.pow(1 - t, n - j);
+    }
+    
+    // Apply weights to basis
+    const weightedBasis = basis.map((b, j) => weights[j] * b);
+    
+    // Calculate numerator (weighted sum of control points)
+    const numerator = [0, 0];
+    for (let j = 0; j <= n; j++) {
+      numerator[0] += weightedBasis[j] * controlPoints[j][0];
+      numerator[1] += weightedBasis[j] * controlPoints[j][1];
+    }
+    
+    // Calculate denominator (sum of weighted basis)
+    const denominator = weightedBasis.reduce((sum, wb) => sum + wb, 0);
+    
+    // Ensure no division by zero
+    if (denominator > 1e-10) {
+      curvePoints[i][0] = numerator[0] / denominator;
+      curvePoints[i][1] = numerator[1] / denominator;
+    }
+  }
+  
+  console.log("Generated curve points:", curvePoints);
+  return curvePoints;
+}
+
+/**
+ * Simple optimization function that implements a gradient descent approach with constraints
+ * 
+ * @param {Function} func - The function to minimize
+ * @param {Array} initialParams - Initial parameter values
+ * @param {Object} options - Optimization options
+ * @returns {Object} - Optimization result object
+ */
+function minimize(func, initialParams, options) {
+  const {
+      bounds = null,
+      callback = null,
+      options: {
+          maxiter = 100,
+          ftol = 1e-4,
+          disp = false
+      } = {}
+  } = options || {};
+
+  // Make a copy of the initial parameters
+  let x = [...initialParams];
+  let prevX = [...x];
+  let fun = func(x);
+  let prevFun = fun;
+  
+  // Numerical gradient calculation
+  const calculateGradient = (f, x, h = 1e-7) => {
+      const n = x.length;
+      const gradient = Array(n);
+      const f0 = f(x);
+      
+      for (let i = 0; i < n; i++) {
+          const xh = [...x];
+          xh[i] += h;
+          gradient[i] = (f(xh) - f0) / h;
+      }
+      
+      return gradient;
+  };
+  
+  // Apply bounds to parameters
+  const applyBounds = (x, bounds) => {
+      if (!bounds) return x;
+      
+      return x.map((val, i) => {
+          const [lower, upper] = bounds[i];
+          return Math.max(lower, Math.min(val, upper));
+      });
+  };
+  
+  // Termination flag
+  let terminated = false;
+  
+  // Main optimization loop
+  for (let iter = 0; iter < maxiter && !terminated; iter++) {
+      // Calculate gradient
+      const gradient = calculateGradient(func, x);
+      
+      // Step size (learning rate) - can be adjusted
+      const step = 0.1;
+      
+      // Update parameters using gradient descent
+      prevX = [...x];
+      x = x.map((val, i) => val - step * gradient[i]);
+      
+      // Apply bounds if provided
+      if (bounds) {
+          x = applyBounds(x, bounds);
+      }
+      
+      // Calculate new function value
+      prevFun = fun;
+      fun = func(x);
+      
+      // Check for convergence
+      const paramChange = Math.sqrt(
+          x.reduce((sum, val, i) => sum + Math.pow(val - prevX[i], 2), 0)
+      );
+      
+      const funChange = Math.abs(fun - prevFun);
+      
+      if (disp) {
+          console.log(`Iteration ${iter}: f(x) = ${fun}, change = ${funChange}`);
+      }
+      
+      // Check for convergence
+      if (funChange < ftol) {
+          if (disp) {
+              console.log('Optimization converged (function value change below tolerance)');
+          }
+          break;
+      }
+      
+      // Call the callback if provided
+      if (callback) {
+          terminated = callback.call(x, { fun: fun });
+      }
+  }
+  
+  return {
+      x: x,
+      fun: fun,
+      success: !terminated,
+      message: terminated ? "Terminated by callback" : "Optimization successful",
+      nit: maxiter // Number of iterations
+  };
+}
+
+export const fitRocBezier = (fpr, tpr) => {
+  let outerIdx = maxRelativeSlopes(fpr, tpr)[1];
+  outerIdx = cleanMaxRelativeSlopeIndex(outerIdx, tpr.length);
+
+  let uRocFprFitted = outerIdx.map(idx => fpr[idx]);
+  let uRocTprFitted = outerIdx.map(idx => tpr[idx]);
+  
+  const [dedupFpr, dedupTpr] = deduplicateRocPoints(uRocFprFitted, uRocTprFitted);
+  uRocFprFitted = dedupFpr;
+  uRocTprFitted = dedupTpr;
+
+  const controlPoints = uRocFprFitted.map((fprVal, i) => [fprVal, uRocTprFitted[i]]);
+  const empiricalPoints = fpr.map((fprVal, i) => [fprVal, tpr[i]]);
+  const initialWeights = Array(controlPoints.length).fill(1);
+  // const bounds = controlPoints.map(() => [0, 20]);
+
+  const result = optimizeBezierFast(controlPoints, empiricalPoints, initialWeights);
+  const optimalWeights = result.x;
+  const numPoints = empiricalPoints.length;
+  const curvePointsGen = rationalBezierCurveOptimized(controlPoints, optimalWeights, numPoints);
+
+  return { curvePointsGen };
+};
+
+// export const findOptimalPoint = (diseaseMean, diseaseStd, healthyMean, healthyStd, size = 1000, seed = 12345) => {
+//   // Create a seeded random function
+//   const seededRandom = createSeededRandom(seed);
+  
+//   // Generate all the normally distributed values first
+//   const diseaseValues = generateNormalDistribution(diseaseMean, diseaseStd, size, seededRandom);
+//   const healthyValues = generateNormalDistribution(healthyMean, healthyStd, size, seededRandom);
+  
+//   // Then create labels and assign corresponding values
+//   const trueLabels = [];
+//   const predictions = [];
+  
+//   for (let i = 0; i < size; i++) {
+//     const isDisease = seededRandom() < 0.5;
+//     trueLabels.push(isDisease ? 1 : 0);
+//     predictions.push(isDisease ? diseaseValues[i] : healthyValues[i]);
+//   }
+  
+//   return { predictions, trueLabels };
+// };

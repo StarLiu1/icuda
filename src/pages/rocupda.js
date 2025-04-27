@@ -3,37 +3,38 @@ import { useNavigate } from 'react-router-dom';
 import { 
   generateSimulatedData,
   calculateRocCurve, 
-  calculateAUC 
+  calculateAUC,
+  fitRocBezier
 } from '../utils/rocUtils';
 
 // Import visualization components
 import { RocPlot, UtilityPlot, DistributionPlot } from '../components/visualizations';
 
 // Helper function to generate curve points (simplified version of Bezier curve)
-const generateCurvePoints = (fpr, tpr, numPoints = 100) => {
-  const points = [];
-  for (let i = 0; i < numPoints; i++) {
-    const x = i / (numPoints - 1);
-    // Find closest points in the original curve
-    let idx = 0;
-    while (idx < fpr.length - 1 && fpr[idx] < x) {
-      idx++;
-    }
+// const generateCurvePoints = (fpr, tpr, numPoints = 100) => {
+//   const points = [];
+//   for (let i = 0; i < numPoints; i++) {
+//     const x = i / (numPoints - 1);
+//     // Find closest points in the original curve
+//     let idx = 0;
+//     while (idx < fpr.length - 1 && fpr[idx] < x) {
+//       idx++;
+//     }
     
-    // Interpolate
-    const x1 = fpr[Math.max(0, idx - 1)];
-    const y1 = tpr[Math.max(0, idx - 1)];
-    const x2 = fpr[idx];
-    const y2 = tpr[idx];
+//     // Interpolate
+//     const x1 = fpr[Math.max(0, idx - 1)];
+//     const y1 = tpr[Math.max(0, idx - 1)];
+//     const x2 = fpr[idx];
+//     const y2 = tpr[idx];
     
-    // Linear interpolation
-    const t = (x - x1) / (x2 - x1) || 0;
-    const y = y1 + t * (y2 - y1);
+//     // Linear interpolation
+//     const t = (x - x1) / (x2 - x1) || 0;
+//     const y = y1 + t * (y2 - y1);
     
-    points.push([x, y]);
-  }
-  return points;
-};
+//     points.push([x, y]);
+//   }
+//   return points;
+// };
 
 const Rocupda = () => {
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ const Rocupda = () => {
     if (rocData.fpr.length > 0) {
       calculateOptimalCutoff();
     }
-  }, [uTP, uFP, uTN, uFN, pD]);
+  }, [uTP, uFP, uTN, uFN, pD, dataType, diseaseMean, diseaseStd, healthyMean, healthyStd]);
   
   // Function to generate simulated data
   const generateData = () => {
@@ -112,10 +113,10 @@ const Rocupda = () => {
     const auc = calculateAUC(fpr, tpr);
     
     // Generate bezier curve points for a smooth curve (simplified in this version)
-    const curvePoints = generateCurvePoints(fpr, tpr);
+    const curvePoints = fitRocBezier(fpr, tpr);
     
     setRocData({ fpr, tpr, thresholds, auc, curvePoints });
-    calculateOptimalCutoff();
+    // calculateOptimalCutoff();
 
     // Set initial cutoff at 0
     handleCutoffChange(0);
@@ -123,6 +124,8 @@ const Rocupda = () => {
   
   // Calculate optimal cutoff point
   const calculateOptimalCutoff = () => {
+    // const { optimalPoint: newOptimalPoint, trueLabels: newLabels } = 
+    //   calculateCutoffOptimal()
     // This function is now in RocPlot component
     // Only triggers the useEffect hook in that component
   };
