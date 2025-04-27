@@ -59,14 +59,30 @@ export const calculateAUC = (fpr, tpr) => {
   return auc;
 };
 
-// Function to generate normal distribution data
-export const generateNormalDistribution = (mean, stdDev, size) => {
+// Seeded random number generator using a Linear Congruential Generator algorithm
+function createSeededRandom(seed) {
+  // Constants for a good LCG
+  const a = 1664525;
+  const c = 1013904223;
+  const m = Math.pow(2, 32);
+  
+  let currentSeed = seed;
+  
+  return function() {
+    // Update the seed
+    currentSeed = (a * currentSeed + c) % m;
+    // Return a value between 0 and 1
+    return currentSeed / m;
+  };
+}
+
+export const generateNormalDistribution = (mean, stdDev, size, randomFunc) => {
   // Box-Muller transform to generate normally distributed random numbers
   const result = [];
   for (let i = 0; i < size; i++) {
     let u = 0, v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
+    while (u === 0) u = randomFunc();
+    while (v === 0) v = randomFunc();
     
     const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     result.push(z * stdDev + mean);
@@ -74,17 +90,23 @@ export const generateNormalDistribution = (mean, stdDev, size) => {
   return result;
 };
 
-// Function to generate simulated data based on binormal model
-export const generateSimulatedData = (diseaseMean, diseaseStd, healthyMean, healthyStd, size = 1000) => {
-  const trueLabels = Array(size).fill(0).map(() => Math.random() < 0.5 ? 1 : 0);
+export const generateSimulatedData = (diseaseMean, diseaseStd, healthyMean, healthyStd, size = 1000, seed = 12345) => {
+  // Create a seeded random function
+  const seededRandom = createSeededRandom(seed);
   
-  const predictions = trueLabels.map(label => {
-    if (label === 1) {
-      return generateNormalDistribution(diseaseMean, diseaseStd, 1)[0];
-    } else {
-      return generateNormalDistribution(healthyMean, healthyStd, 1)[0];
-    }
-  });
+  // Generate all the normally distributed values first
+  const diseaseValues = generateNormalDistribution(diseaseMean, diseaseStd, size, seededRandom);
+  const healthyValues = generateNormalDistribution(healthyMean, healthyStd, size, seededRandom);
+  
+  // Then create labels and assign corresponding values
+  const trueLabels = [];
+  const predictions = [];
+  
+  for (let i = 0; i < size; i++) {
+    const isDisease = seededRandom() < 0.5;
+    trueLabels.push(isDisease ? 1 : 0);
+    predictions.push(isDisease ? diseaseValues[i] : healthyValues[i]);
+  }
   
   return { predictions, trueLabels };
 };
