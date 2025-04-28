@@ -4,7 +4,8 @@ import {
   generateSimulatedData,
   calculateRocCurve, 
   calculateAUC,
-  fitRocBezier
+  fitRocBezier,
+  findOptimalPoint
 } from '../utils/rocUtils';
 
 // Import visualization components
@@ -64,9 +65,12 @@ const Rocupda = () => {
     tpr: [], 
     thresholds: [], 
     auc: 0, 
-    curvePoints: [] 
+    curvePoints: [] ,
+
   });
-  const [optimalCutoff, setOptimalCutoff] = useState(0);
+  const [optimalCutoff, setOptimalCutoff] = useState(0.5);
+  const [optimalPointFpr, setOptimalPointFpr] = useState(0);
+  const [optimalPointTpr, setOptimalPointTpr] = useState(0);
   const [tprValue, setTprValue] = useState(0);
   const [fprValue, setFprValue] = useState(0);
   
@@ -87,15 +91,17 @@ const Rocupda = () => {
   useEffect(() => {
     if (dataType === 'simulated') {
       generateData();
+      
     }
   }, [dataType, diseaseMean, diseaseStd, healthyMean, healthyStd]);
   
   // Recalculate optimal cutoff when utilities or prevalence changes
   useEffect(() => {
     if (rocData.fpr.length > 0) {
+      // calculateOptimalCutoff();
       calculateOptimalCutoff();
     }
-  }, [uTP, uFP, uTN, uFN, pD, dataType, diseaseMean, diseaseStd, healthyMean, healthyStd]);
+  }, [uTP, uFP, uTN, uFN, pD, rocData]);
   
   // Function to generate simulated data
   const generateData = () => {
@@ -115,8 +121,10 @@ const Rocupda = () => {
     // Generate bezier curve points for a smooth curve (simplified in this version)
     const curvePoints = fitRocBezier(fpr, tpr);
     
+    // console.log(curvePoints)
     setRocData({ fpr, tpr, thresholds, auc, curvePoints });
-    // calculateOptimalCutoff();
+    // console.log(rocData)
+    
 
     // Set initial cutoff at 0
     handleCutoffChange(0);
@@ -124,10 +132,18 @@ const Rocupda = () => {
   
   // Calculate optimal cutoff point
   const calculateOptimalCutoff = () => {
+    const {fpr, tpr, thresholds, curvePoints} = rocData;
+    // console.log(curvePoints)
+    const {optimalPtFpr, optimalPtTpr, optimalPointCutoff} = findOptimalPoint(uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds);
     // const { optimalPoint: newOptimalPoint, trueLabels: newLabels } = 
     //   calculateCutoffOptimal()
     // This function is now in RocPlot component
     // Only triggers the useEffect hook in that component
+    setOptimalPointFpr(optimalPtFpr);
+    setOptimalPointTpr(optimalPtTpr);
+    console.log(optimalCutoff)
+    setOptimalCutoff(optimalPointCutoff);
+
   };
   
   // Handle cutoff slider change
@@ -574,6 +590,8 @@ const Rocupda = () => {
                   <RocPlot 
                     rocData={rocData}
                     cutoff={cutoff}
+                    optimalPointFpr={optimalPointFpr}
+                    optimalPointTpr={optimalPointTpr}
                     optimalCutoff={optimalCutoff}
                     drawMode={drawMode}
                     shapes={shapes}
@@ -602,10 +620,8 @@ const Rocupda = () => {
                     tprValue={tprValue}
                     fprValue={fprValue}
                     optimalCutoff={optimalCutoff}
-                    optimalTpr={rocData.tpr.find((_, i) => 
-                      Math.abs(rocData.thresholds[i] - optimalCutoff) < 0.001) || 0}
-                    optimalFpr={rocData.fpr.find((_, i) =>
-                      Math.abs(rocData.thresholds[i] - optimalCutoff) < 0.001) || 0}
+                    optimalTpr={optimalPointTpr}
+                    optimalFpr={optimalPointFpr}
                     uTP={uTP}
                     uFP={uFP}
                     uTN={uTN}

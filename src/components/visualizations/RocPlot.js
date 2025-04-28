@@ -15,6 +15,8 @@ const tooltipData = {
 const RocPlot = ({ 
   rocData, 
   cutoff, 
+  optimalPointFpr, 
+  optimalPointTpr, 
   optimalCutoff, 
   drawMode, 
   shapes, 
@@ -160,7 +162,7 @@ const RocPlot = ({
   
   // Generate ROC plot config
   const generateRocPlot = () => {
-    const { fpr, tpr, curvePoints, auc } = rocData;
+    const { fpr, tpr, curvePoints, auc} = rocData;
     
     const data = [
       // ROC Curve (empirical points)
@@ -170,34 +172,41 @@ const RocPlot = ({
         mode: 'lines',
         name: 'ROC Curve',
         line: { color: 'blue' }
-      },
-      // Bezier Curve
-      {
-        x: curvePoints.map(p => p[0]),
-        y: curvePoints.map(p => p[1]),
+      }
+    ];
+    
+    // Add Bezier Curve if available and valid
+    if (curvePoints && curvePoints.curvePointsGen && Array.isArray(curvePoints.curvePointsGen)) {
+      const bezierPoints = curvePoints.curvePointsGen;
+      data.push({
+        x: bezierPoints.map(p => p[0]),
+        y: bezierPoints.map(p => p[1]),
         mode: 'lines',
         name: 'Bezier Curve',
         line: { color: 'blue' }
-      },
-      // Selected Cutoff Point
-      {
-        x: [fprValue],
-        y: [tprValue],
-        mode: 'markers',
-        name: 'Selected Cutoff Point',
-        marker: { color: 'blue', size: 10 }
-      },
-      // Optimal Cutoff Point based on utility
-      {
-        x: [rocData.fpr.find((_, i) => 
-          Math.abs(rocData.thresholds[i] - optimalCutoff) < 0.001) || 0],
-        y: [rocData.tpr.find((_, i) =>
-          Math.abs(rocData.thresholds[i] - optimalCutoff) < 0.001) || 0],
-        mode: 'markers',
-        name: 'Optimal Cutoff Point',
-        marker: { color: 'red', size: 10 }
-      }
-    ];
+      });
+    }
+    
+    // Selected Cutoff Point
+    data.push({
+      x: [fprValue],
+      y: [tprValue],
+      mode: 'markers',
+      name: 'Selected Cutoff Point',
+      marker: { color: 'blue', size: 10 }
+    });
+    
+    // Optimal Cutoff Point based on utility
+    // const optimalFprIndex = rocData.thresholds.findIndex(t => Math.abs(t - optimalCutoff) < 0.001);
+    // if (optimalFprIndex >= 0) {
+    data.push({
+      x: [optimalPointFpr || 0],
+      y: [optimalPointTpr|| 0],
+      mode: 'markers',
+      name: 'Optimal Cutoff Point',
+      marker: { color: 'red', size: 10 }
+    });
+    // }
     
     // If there are filled areas for partial AUC, add them
     if (shapes.length === 2) {

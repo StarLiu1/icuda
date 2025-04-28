@@ -136,34 +136,34 @@ export const findClosestPair = (tpr, fpr, targetTpr, targetFpr) => {
   };
 };
 
-// Function to find FPR and TPR values for a given slope on the ROC curve
-export const findFprTprForSlope = (curvePoints, targetSlope) => {
-  let bestDistance = Number.POSITIVE_INFINITY;
-  let bestFpr = 0;
-  let bestTpr = 0;
+// // Function to find FPR and TPR values for a given slope on the ROC curve
+// export const findFprTprForSlope = (curvePoints, targetSlope) => {
+//   let bestDistance = Number.POSITIVE_INFINITY;
+//   let bestFpr = 0;
+//   let bestTpr = 0;
   
-  for (let i = 1; i < curvePoints.length; i++) {
-    const [fpr1, tpr1] = curvePoints[i - 1];
-    const [fpr2, tpr2] = curvePoints[i];
+//   for (let i = 1; i < curvePoints.length; i++) {
+//     const [fpr1, tpr1] = curvePoints[i - 1];
+//     const [fpr2, tpr2] = curvePoints[i];
     
-    // Calculate slope of line segment
-    const slopeSeg = (tpr2 - tpr1) / (fpr2 - fpr1);
+//     // Calculate slope of line segment
+//     const slopeSeg = (tpr2 - tpr1) / (fpr2 - fpr1);
     
-    // Calculate distance between slopes
-    const distance = Math.abs(slopeSeg - targetSlope);
+//     // Calculate distance between slopes
+//     const distance = Math.abs(slopeSeg - targetSlope);
     
-    if (distance < bestDistance) {
-      bestDistance = distance;
+//     if (distance < bestDistance) {
+//       bestDistance = distance;
       
-      // Interpolate to find the exact point where the slope equals targetSlope
-      // For simplicity, we'll just use the midpoint of the segment
-      bestFpr = (fpr1 + fpr2) / 2;
-      bestTpr = (tpr1 + tpr2) / 2;
-    }
-  }
+//       // Interpolate to find the exact point where the slope equals targetSlope
+//       // For simplicity, we'll just use the midpoint of the segment
+//       bestFpr = (fpr1 + fpr2) / 2;
+//       bestTpr = (tpr1 + tpr2) / 2;
+//     }
+//   }
   
-  return [bestFpr, bestTpr];
-};
+//   return [bestFpr, bestTpr];
+// };
 
 // Functions for expected utility calculation
 export const treatAll = (probability, uFP, uTP) => {
@@ -294,7 +294,8 @@ function cleanMaxRelativeSlopeIndex(indices, lenOfTpr) {
   if (ordered[ordered.length - 1] !== lenOfTpr - 1) {
       ordered.push(lenOfTpr - 1);
   }
-  
+  console.log("what")
+  console.log(ordered.length)
   return ordered;
 }
 
@@ -473,20 +474,7 @@ function distance(point1, point2) {
   );
 }
 
-/**
-* Binomial coefficient calculation (n choose k)
-*/
-function binomialCoefficient(n, k) {
-  if (k < 0 || k > n) return 0;
-  if (k === 0 || k === n) return 1;
-  
-  let result = 1;
-  for (let i = 1; i <= k; i++) {
-      result *= (n + 1 - i);
-      result /= i;
-  }
-  return result;
-}
+
 
 /**
 * Optimized rational Bezier curve calculation using JavaScript arrays.
@@ -668,28 +656,361 @@ export const fitRocBezier = (fpr, tpr) => {
   const result = optimizeBezierFast(controlPoints, empiricalPoints, initialWeights);
   const optimalWeights = result.x;
   const numPoints = empiricalPoints.length;
+  // console.log("here")
+  // console.log(numPoints)
   const curvePointsGen = rationalBezierCurveOptimized(controlPoints, optimalWeights, numPoints);
 
   return { curvePointsGen };
 };
 
-// export const findOptimalPoint = (diseaseMean, diseaseStd, healthyMean, healthyStd, size = 1000, seed = 12345) => {
-//   // Create a seeded random function
-//   const seededRandom = createSeededRandom(seed);
+/**
+ * Compute binomial coefficient (n choose k)
+ * @param {number} n - Upper value
+ * @param {number} k - Lower value
+ * @returns {number} - Binomial coefficient value
+ */
+function binomialCoefficient(n, k) {
+  if (k < 0 || k > n) return 0;
+  if (k === 0 || k === n) return 1;
   
-//   // Generate all the normally distributed values first
-//   const diseaseValues = generateNormalDistribution(diseaseMean, diseaseStd, size, seededRandom);
-//   const healthyValues = generateNormalDistribution(healthyMean, healthyStd, size, seededRandom);
+  let result = 1;
+  for (let i = 1; i <= k; i++) {
+    result *= (n + 1 - i);
+    result /= i;
+  }
+  return result;
+}
+
+/**
+ * Compute a point on a Bézier curve defined by control points at parameter t.
+ * @param {Array} controlPoints - Array of [x,y] control point coordinates
+ * @param {number} t - Parameter value between 0 and 1
+ * @returns {Array} - [x,y] coordinates of the point on the curve
+ */
+function bezier(controlPoints, t) {
+  // console.log(controlPoints.length)
+  const n = controlPoints.length - 1;
+  console.log(n)
+  let point = [0, 0];
   
-//   // Then create labels and assign corresponding values
-//   const trueLabels = [];
-//   const predictions = [];
+  for (let i = 0; i <= n; i++) {
+    // Calculate binomial coefficient
+    const binom = binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
+    
+    // Add weighted control point
+    point[0] += binom * controlPoints[i][0];
+    point[1] += binom * controlPoints[i][1];
+  }
+  // console.log("this point")
+  // console.log(point)
+
+  return point;
+}
+
+/**
+ * Compute the first derivative of a Bézier curve at parameter t.
+ * @param {Array} controlPoints - Array of [x,y] control point coordinates
+ * @param {number} t - Parameter value between 0 and 1
+ * @returns {Array} - [dx,dy] representing the derivative vector
+ */
+function bezierDerivative(controlPoints, t) {
+  // Convert dictionary to array if needed
+  const pointsArray = Object.values(controlPoints);
   
-//   for (let i = 0; i < size; i++) {
-//     const isDisease = seededRandom() < 0.5;
-//     trueLabels.push(isDisease ? 1 : 0);
-//     predictions.push(isDisease ? diseaseValues[i] : healthyValues[i]);
-//   }
+  const n = pointsArray[0].length - 1;
   
-//   return { predictions, trueLabels };
-// };
+  // Create derivative control points
+  const derivativeControlPoints = [];
+  for (let i = 0; i < n; i++) {
+    // Calculate n * (P_{i+1} - P_i) for each consecutive pair of control points
+    const dx = n * (pointsArray[0][i + 1][0] - pointsArray[0][i][0]);
+    const dy = n * (pointsArray[0][i + 1][1] - pointsArray[0][i][1]);
+    // console.log(dx)
+    derivativeControlPoints.push([dx, dy]);
+  }
+  
+  // Apply bezier function to the derivative control points
+  return bezier(derivativeControlPoints, t);
+}
+
+/**
+ * Find the point on a Bezier curve with the slope closest to a target slope
+ * @param {Array} curvePoints - Array of [x,y] points representing the Bezier curve
+ * @param {number} targetSlope - The desired slope to find
+ * @returns {Array} - [fpr, tpr] coordinates of the point with the closest slope
+ */
+function findClosestSlopePoint(curvePoints, targetSlope) {
+  // Ensure we have enough points
+  if (!curvePoints || curvePoints.length < 2) {
+    console.error("Need at least 2 points to find slopes");
+    return [0, 0];
+  }
+  
+  let bestDistance = Infinity;
+  let bestFpr = 0;
+  let bestTpr = 0;
+  
+  // Go through each pair of consecutive points and calculate slope
+  for (let i = 1; i < curvePoints.length; i++) {
+    const [fpr1, tpr1] = curvePoints[i - 1];
+    const [fpr2, tpr2] = curvePoints[i];
+    
+    // Calculate slope of this segment (∆y/∆x)
+    const dx = fpr2 - fpr1;
+    const dy = tpr2 - tpr1;
+    
+    // Avoid division by zero or very small dx
+    if (Math.abs(dx) < 1e-6) {
+      continue;
+    }
+    
+    const segmentSlope = dy / dx;
+    
+    // Calculate distance between slopes
+    const distance = Math.abs(segmentSlope - targetSlope);
+    
+    // If this is the closest slope we've found so far
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      
+      // Use midpoint of segment as the representative point
+      // Or we could interpolate more precisely if needed
+      bestFpr = (fpr1 + fpr2) / 2;
+      bestTpr = (tpr1 + tpr2) / 2;
+    }
+  }
+  
+  return [bestFpr, bestTpr];
+}
+
+/**
+ * Minimizes a single-variable function using Brent's method
+ * @param {Function} func - The function to minimize
+ * @param {Object} options - Optional parameters
+ * @param {Array} options.bounds - [min, max] bounds for the search
+ * @param {Number} options.tol - Tolerance for termination
+ * @param {Number} options.maxiter - Maximum number of iterations
+ * @returns {Object} - Result object with x value at minimum and function value
+ */
+function minimizeScalar(func, options = {}) {
+  const bounds = options.bounds || [-500, 500];
+  const tol = options.tol || 1e-5;
+  const maxiter = options.maxiter || 500;
+  
+  // Implementation of Brent's method for minimization
+  let a = bounds[0];
+  let b = bounds[1];
+  
+  // Golden section numbers
+  const golden = (Math.sqrt(5) - 1) / 2;
+  const goldenComplement = 1 - golden;
+  
+  // Initial points
+  let x = a + goldenComplement * (b - a);
+  let w = x;
+  let v = x;
+  
+  let fx = func(x);
+  let fw = fx;
+  let fv = fx;
+  
+  let iter = 0;
+  let tol1, tol2, xm;
+  
+  while (iter < maxiter) {
+    xm = 0.5 * (a + b);
+    tol1 = tol * Math.abs(x) + 1e-10;
+    tol2 = 2.0 * tol1;
+    
+    // Check stopping criterion
+    if (Math.abs(x - xm) <= (tol2 - 0.5 * (b - a))) {
+      break;
+    }
+    
+    let p = 0, q = 0, r = 0;
+    let u;
+    
+    // Try parabolic fit
+    if (Math.abs(x - w) > tol1) {
+      // Parabolic interpolation
+      r = (x - w) * (fx - fv);
+      q = (x - v) * (fx - fw);
+      p = (x - v) * q - (x - w) * r;
+      q = 2.0 * (q - r);
+      
+      if (q > 0) {
+        p = -p;
+      } else {
+        q = -q;
+      }
+      
+      // Check if parabolic fit is acceptable
+      if (Math.abs(p) < Math.abs(0.5 * q * tol1) &&
+          p < q * (b - x) && p < q * (x - a)) {
+        u = x + p / q;
+        
+        // f must not be evaluated too close to bounds
+        if ((u - a) < tol2 || (b - u) < tol2) {
+          u = x + Math.sign(xm - x) * tol1;
+        }
+      } else {
+        // Golden section step
+        if (x >= xm) {
+          u = x - golden * (x - a);
+        } else {
+          u = x + golden * (b - x);
+        }
+      }
+    } else {
+      // Golden section step
+      if (x >= xm) {
+        u = x - golden * (x - a);
+      } else {
+        u = x + golden * (b - x);
+      }
+    }
+    
+    // Ensure u is not too close to bounds
+    if (Math.abs(u - x) < tol1) {
+      u = x + Math.sign(u - x) * tol1;
+    }
+    
+    // Evaluate function at u
+    const fu = func(u);
+    
+    // Update points
+    if (fu <= fx) {
+      if (u >= x) {
+        a = x;
+      } else {
+        b = x;
+      }
+      v = w; w = x; x = u;
+      fv = fw; fw = fx; fx = fu;
+    } else {
+      if (u < x) {
+        a = u;
+      } else {
+        b = u;
+      }
+      
+      if (fu <= fw || w === x) {
+        v = w; w = u;
+        fv = fw; fw = fu;
+      } else if (fu <= fv || v === x || v === w) {
+        v = u;
+        fv = fu;
+      }
+    }
+    
+    iter++;
+  }
+  
+  return {
+    x: x,             // Point where minimum is found
+    fun: fx,          // Value of function at minimum
+    nit: iter,        // Number of iterations
+    success: iter < maxiter // Whether the optimization was successful
+  };
+}
+
+/**
+ * Find the FPR and TPR on the Bézier curve for a given slope.
+ * @param {Array} controlPoints - Array of [x,y] control point coordinates
+ * @param {number} desiredSlope - The target slope to find on the curve
+ * @returns {Array} - [fpr, tpr, tOptimal] coordinates and parameter value
+ */
+function findFprTprForSlope(controlPoints, desiredSlope) {
+  /**
+   * Calculate error between current slope at parameter t and desired slope
+   * @param {number} t - Parameter value between 0 and 1
+   * @returns {number} - Squared error between current and desired slope
+   */
+  function slopeError(t) {
+    const derivative = bezierDerivative(controlPoints, t);
+    const [dx, dy] = derivative;
+    // console.log(dx)
+
+    // Avoid division by zero
+    const currentSlope = dx !== 0 ? dy / dx : Infinity;
+    // console.log(currentSlope)
+    return Math.pow(currentSlope - desiredSlope, 2);
+  }
+  
+  // Use scalar minimization to find the t that gives the desired slope
+  const result = minimizeScalar(slopeError, {bounds: [0, 1], tol: 1e-6, maxiter: 100});
+  console.log("check results")
+  console.log(result)
+  if (!result.success) {
+    console.error("Optimization did not converge");
+    return [0, 0, 0];
+  }
+  
+  const tOptimal = result.x;
+  const pointsArray = Object.values(controlPoints);
+  console.log(pointsArray[0])
+  const point = bezier(pointsArray[0], tOptimal);
+  console.log("check point")
+  console.log(point)
+  // Return FPR, TPR, and t
+  return [point[0], point[1], tOptimal];
+}
+/**
+ * Find the closest pair of TPR and FPR values to the desired values
+ * @param {Array} tprs - Array of true positive rates
+ * @param {Array} fprs - Array of false positive rates 
+ * @param {number} desiredTpr - Target true positive rate
+ * @param {number} desiredFpr - Target false positive rate
+ * @returns {Object} Object containing the closest tpr, fpr, and index
+ */
+function findClosestPairSeparate(tprs, fprs, desiredTpr, desiredFpr) {
+  // Check that the arrays have the same length
+  if (tprs.length !== fprs.length) {
+    throw new Error("TPR and FPR arrays must have the same length");
+  }
+  
+  let closestIndex = 0;
+  let minDistance = Infinity;
+  
+  // Calculate the distance from each pair to the desired pair
+  for (let i = 0; i < tprs.length; i++) {
+    // Compute Euclidean distance
+    const distance = Math.sqrt(
+      Math.pow(tprs[i] - desiredTpr, 2) + 
+      Math.pow(fprs[i] - desiredFpr, 2)
+    );
+    
+    // Update if this is the closest point so far
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestIndex = i;
+    }
+  }
+  // console.log(closestIndex)
+  // Return the closest pair and its index
+  return {
+    optimalPointTpr: tprs[closestIndex],
+    optimalPointFpr: fprs[closestIndex],
+    index: closestIndex
+  };
+}
+
+export const findOptimalPoint = (uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds) => {
+ 
+  const H = uTN - uFP
+  const B = uTP - uFN + 0.000000001
+  const HoverB = H/B
+  // console.log(curvePoints)
+  const slope_of_interest = pD ? HoverB * (1 - pD) / pD : HoverB * (1 - 0.5) / 0.5;
+  console.log(slope_of_interest)
+  const cutoffRational = findFprTprForSlope(curvePoints, slope_of_interest)
+  console.log(cutoffRational)
+  const [closestFpr, closestTpr] = [cutoffRational[0], cutoffRational[1]];
+  console.log(closestFpr)
+  const {optimalPointFpr, optimalPointTpr, index} = findClosestPairSeparate(tpr, fpr, closestFpr, closestTpr)
+  const optimalPointCutoff = thresholds[index]
+  // tpr_value_optimal_pt = original_tpr
+  // fpr_value_optimal_pt = original_fpr
+  
+  return {optimalPointFpr, optimalPointTpr, optimalPointCutoff};
+};
