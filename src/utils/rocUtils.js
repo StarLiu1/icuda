@@ -481,9 +481,9 @@ function distance(point1, point2) {
 */
 function rationalBezierCurveOptimized(controlPoints, weights, numPoints = 100) {
   // Debug output
-  console.log("Control points:", controlPoints);
-  console.log("Weights:", weights);
-  console.log("Number of points:", numPoints);
+  // console.log("Control points:", controlPoints);
+  // console.log("Weights:", weights);
+  // console.log("Number of points:", numPoints);
   
   const n = controlPoints.length - 1;
   const tValues = Array(numPoints).fill(0).map((_, i) => i / (numPoints - 1));
@@ -525,7 +525,7 @@ function rationalBezierCurveOptimized(controlPoints, weights, numPoints = 100) {
     }
   }
   
-  console.log("Generated curve points:", curvePoints);
+  // console.log("Generated curve points:", curvePoints);
   return curvePoints;
 }
 
@@ -690,7 +690,7 @@ function binomialCoefficient(n, k) {
 function bezier(controlPoints, t) {
   // console.log(controlPoints.length)
   const n = controlPoints.length - 1;
-  console.log(n)
+  // console.log(n)
   let point = [0, 0];
   
   for (let i = 0; i <= n; i++) {
