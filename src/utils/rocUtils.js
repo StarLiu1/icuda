@@ -90,7 +90,7 @@ export const generateNormalDistribution = (mean, stdDev, size, randomFunc) => {
   return result;
 };
 
-export const generateSimulatedData = (diseaseMean, diseaseStd, healthyMean, healthyStd, size = 1000, seed = 12345) => {
+export const generateSimulatedData = (diseaseMean, diseaseStd, healthyMean, healthyStd, size = 1000, seed = 888) => {
   // Create a seeded random function
   const seededRandom = createSeededRandom(seed);
   
@@ -948,7 +948,7 @@ function findFprTprForSlope(controlPoints, desiredSlope) {
   
   const tOptimal = result.x;
   const pointsArray = Object.values(controlPoints);
-  console.log(pointsArray[0])
+  // console.log(pointsArray[0])
   const point = bezier(pointsArray[0], tOptimal);
   console.log("check point")
   console.log(point)
@@ -963,8 +963,10 @@ function findFprTprForSlope(controlPoints, desiredSlope) {
  * @param {number} desiredFpr - Target false positive rate
  * @returns {Object} Object containing the closest tpr, fpr, and index
  */
-function findClosestPairSeparate(tprs, fprs, desiredTpr, desiredFpr) {
+function findClosestPairSeparate(tprs, fprs, desiredFpr, desiredTpr) {
   // Check that the arrays have the same length
+  // console.log("hiiii")
+  // console.log(fprs)
   if (tprs.length !== fprs.length) {
     throw new Error("TPR and FPR arrays must have the same length");
   }
@@ -989,10 +991,31 @@ function findClosestPairSeparate(tprs, fprs, desiredTpr, desiredFpr) {
   // console.log(closestIndex)
   // Return the closest pair and its index
   return {
-    optimalPointTpr: tprs[closestIndex],
-    optimalPointFpr: fprs[closestIndex],
+    optimalPtTpr: tprs[closestIndex],
+    optimalPtFpr: fprs[closestIndex],
     index: closestIndex
   };
+}
+
+/**
+ * Extracts FPR and TPR arrays from curvePoints
+ * @param {Array} curvePoints - Array of [x,y] points where x is FPR and y is TPR
+ * @returns {Object} Object containing separate FPR and TPR arrays
+ */
+function extractFprTprFromCurvePoints(curvePoints) {
+  const pointsArray = Object.values(curvePoints);
+  // Check if curvePoints is properly formed
+  console.log(pointsArray[0].length)
+  if (!Array.isArray(pointsArray) || pointsArray[0].length === 0) {
+    console.error("Invalid curvePoints structure", pointsArray);
+    return { fpr: [], tpr: [] };
+  }
+  
+  // Extract FPR (x) and TPR (y) values from each point
+  const opfpr = pointsArray[0].map(point => point[0]);
+  const optpr = pointsArray[0].map(point => point[1]);
+  
+  return { opfpr, optpr };
 }
 
 export const findOptimalPoint = (uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds) => {
@@ -1004,13 +1027,17 @@ export const findOptimalPoint = (uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, 
   const slope_of_interest = pD ? HoverB * (1 - pD) / pD : HoverB * (1 - 0.5) / 0.5;
   console.log(slope_of_interest)
   const cutoffRational = findFprTprForSlope(curvePoints, slope_of_interest)
-  console.log(cutoffRational)
+  console.log("cutoff rational")
+  // console.log(cutoffRational)
   const [closestFpr, closestTpr] = [cutoffRational[0], cutoffRational[1]];
-  console.log(closestFpr)
-  const {optimalPointFpr, optimalPointTpr, index} = findClosestPairSeparate(tpr, fpr, closestFpr, closestTpr)
+  // console.log(closestFpr)
+  // const {opfpr, optpr} = extractFprTprFromCurvePoints(curvePoints);
+  const opfpr = fpr;
+  const optpr = tpr;
+  const {optimalPtFpr, optimalPtTpr, index} = findClosestPairSeparate(optpr, opfpr, closestFpr, closestTpr)
   const optimalPointCutoff = thresholds[index]
   // tpr_value_optimal_pt = original_tpr
   // fpr_value_optimal_pt = original_fpr
-  
-  return {optimalPointFpr, optimalPointTpr, optimalPointCutoff};
+  console.log({optimalPtFpr, optimalPtTpr, optimalPointCutoff})
+  return {optimalPtFpr, optimalPtTpr, optimalPointCutoff};
 };

@@ -259,7 +259,7 @@ const RocPlot = ({
       xaxis: { title: 'False Positive Rate (FPR)' },
       yaxis: { title: 'True Positive Rate (TPR)' },
       template: 'plotly_white',
-      margin: { l: 30, r: 20, t: 30, b: 10 },
+      margin: { l: 40, r: 0, t: 30, b: 30 },
       shapes: shapes,
       annotations: [
         {
@@ -300,11 +300,11 @@ const RocPlot = ({
         data={generateRocPlot().data}
         layout={generateRocPlot().layout}
         onClick={handleRocPlotClick}
-        style={{ height: '47vh', width: '35vw' }}
+        style={{ height: '42vh', width: '35vw' }}
       />
       
       <div style={{ display: 'flex', alignItems: 'center', height: '5%', margin: 0 }}>
-        <div style={{ width: '5%' }}></div>
+        {/* <div style={{ width: '5%' }}></div> */}
         <button
           onClick={toggleDrawMode}
           style={{ paddingBottom: '0', width: '70%', marginLeft: '5%' }}

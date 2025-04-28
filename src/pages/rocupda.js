@@ -128,25 +128,35 @@ const Rocupda = () => {
 
     // Set initial cutoff at 0
     handleCutoffChange(0);
-    // We need to call this with a slight delay to ensure rocData is updated
-    // We'll find a simpler initial operating point without relying on complex curve calculations
-    try {
-      // Find the point closest to (0.2, 0.8) as a reasonable default operating point
-      // This is a simple heuristic that doesn't rely on the Bezier calculations
-      const bestIndex = findClosestPointToCoordinates(fpr, tpr, 0.2, 0.8);
-      
-      setOptimalPointFpr(fpr[bestIndex]);
-      setOptimalPointTpr(tpr[bestIndex]);
-      setOptimalCutoff(thresholds[bestIndex]);
-    } catch (error) {
-      console.error("Error finding initial operating point:", error);
-      // Fallback to first point if there's an error
-      if (fpr.length > 0 && tpr.length > 0) {
-        setOptimalPointFpr(fpr[0]);
-        setOptimalPointTpr(tpr[0]);
-        setOptimalCutoff(thresholds[0]);
+    let newCutoff = 0;
+    setCutoff(newCutoff);
+    
+    // Find index of closest threshold
+    // const { thresholds, fpr, tpr } = rocData;
+    let closestIndex = 0;
+    let minDiff = Number.POSITIVE_INFINITY;
+    
+    for (let i = 0; i < thresholds.length; i++) {
+      const diff = Math.abs(thresholds[i] - newCutoff);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIndex = i;
       }
     }
+    
+    setTprValue(tpr[closestIndex]);
+    setFprValue(fpr[closestIndex]);
+    // console.log(curvePoints)
+    const {optimalPtFpr, optimalPtTpr, optimalPointCutoff} = findOptimalPoint(uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds);
+    // const { optimalPoint: newOptimalPoint, trueLabels: newLabels } = 
+    //   calculateCutoffOptimal()
+    // This function is now in RocPlot component
+    // Only triggers the useEffect hook in that component
+    setOptimalPointFpr(optimalPtFpr);
+    setOptimalPointTpr(optimalPtTpr);
+    console.log("optimalpt fpr")
+    console.log(optimalPtFpr)
+    setOptimalCutoff(optimalPointCutoff);
   };
 
   // Helper function to find the closest point to given coordinates
