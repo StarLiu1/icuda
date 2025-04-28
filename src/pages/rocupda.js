@@ -128,6 +128,45 @@ const Rocupda = () => {
 
     // Set initial cutoff at 0
     handleCutoffChange(0);
+    // We need to call this with a slight delay to ensure rocData is updated
+    // We'll find a simpler initial operating point without relying on complex curve calculations
+    try {
+      // Find the point closest to (0.2, 0.8) as a reasonable default operating point
+      // This is a simple heuristic that doesn't rely on the Bezier calculations
+      const bestIndex = findClosestPointToCoordinates(fpr, tpr, 0.2, 0.8);
+      
+      setOptimalPointFpr(fpr[bestIndex]);
+      setOptimalPointTpr(tpr[bestIndex]);
+      setOptimalCutoff(thresholds[bestIndex]);
+    } catch (error) {
+      console.error("Error finding initial operating point:", error);
+      // Fallback to first point if there's an error
+      if (fpr.length > 0 && tpr.length > 0) {
+        setOptimalPointFpr(fpr[0]);
+        setOptimalPointTpr(tpr[0]);
+        setOptimalCutoff(thresholds[0]);
+      }
+    }
+  };
+
+  // Helper function to find the closest point to given coordinates
+  const findClosestPointToCoordinates = (fpr, tpr, targetFpr, targetTpr) => {
+    let closestIndex = 0;
+    let minDistance = Number.POSITIVE_INFINITY;
+    
+    for (let i = 0; i < fpr.length; i++) {
+      const distance = Math.sqrt(
+        Math.pow(fpr[i] - targetFpr, 2) + 
+        Math.pow(tpr[i] - targetTpr, 2)
+      );
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = i;
+      }
+    }
+    
+    return closestIndex;
   };
   
   // Calculate optimal cutoff point
@@ -589,17 +628,17 @@ const Rocupda = () => {
                 {rocData.fpr.length > 0 && (
                   <RocPlot 
                     rocData={rocData}
-                    cutoff={cutoff}
-                    optimalPointFpr={optimalPointFpr}
-                    optimalPointTpr={optimalPointTpr}
-                    optimalCutoff={optimalCutoff}
+                    cutoff={cutoff || 0}
+                    optimalPointFpr={optimalPointFpr || 0}
+                    optimalPointTpr={optimalPointTpr || 0}
+                    optimalCutoff={optimalCutoff || 0}
                     drawMode={drawMode}
                     shapes={shapes}
                     setShapes={setShapes}
                     partialAUC={partialAUC}
                     setPartialAUC={setPartialAUC}
-                    tprValue={tprValue}
-                    fprValue={fprValue}
+                    tprValue={tprValue || 0}
+                    fprValue={fprValue || 0}
                     onCutoffChange={handleCutoffChange}
                     toggleDrawMode={toggleDrawMode}
                     uTP={uTP}
@@ -617,11 +656,11 @@ const Rocupda = () => {
               <div>
                 {rocData.fpr.length > 0 && (
                   <UtilityPlot 
-                    tprValue={tprValue}
-                    fprValue={fprValue}
-                    optimalCutoff={optimalCutoff}
-                    optimalTpr={optimalPointTpr}
-                    optimalFpr={optimalPointFpr}
+                    tprValue={tprValue || 0}
+                    fprValue={fprValue || 0}
+                    optimalCutoff={optimalCutoff || 0}
+                    optimalTpr={optimalPointTpr || 0}
+                    optimalFpr={optimalPointFpr || 0}
                     uTP={uTP}
                     uFP={uFP}
                     uTN={uTN}
