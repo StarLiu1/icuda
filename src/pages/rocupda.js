@@ -154,8 +154,8 @@ const Rocupda = () => {
     // Only triggers the useEffect hook in that component
     setOptimalPointFpr(optimalPtFpr);
     setOptimalPointTpr(optimalPtTpr);
-    console.log("optimalpt fpr")
-    console.log(optimalPtFpr)
+    // console.log("optimalpt fpr")
+    // console.log(optimalPtFpr)
     setOptimalCutoff(optimalPointCutoff);
   };
 
@@ -190,7 +190,7 @@ const Rocupda = () => {
     // Only triggers the useEffect hook in that component
     setOptimalPointFpr(optimalPtFpr);
     setOptimalPointTpr(optimalPtTpr);
-    console.log(optimalCutoff)
+    // console.log(optimalCutoff)
     setOptimalCutoff(optimalPointCutoff);
 
   };

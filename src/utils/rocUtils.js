@@ -294,8 +294,8 @@ function cleanMaxRelativeSlopeIndex(indices, lenOfTpr) {
   if (ordered[ordered.length - 1] !== lenOfTpr - 1) {
       ordered.push(lenOfTpr - 1);
   }
-  console.log("what")
-  console.log(ordered.length)
+  // console.log("what")
+  // console.log(ordered.length)
   return ordered;
 }
 
@@ -939,8 +939,8 @@ function findFprTprForSlope(controlPoints, desiredSlope) {
   
   // Use scalar minimization to find the t that gives the desired slope
   const result = minimizeScalar(slopeError, {bounds: [0, 1], tol: 1e-6, maxiter: 100});
-  console.log("check results")
-  console.log(result)
+  // console.log("check results")
+  // console.log(result)
   if (!result.success) {
     console.error("Optimization did not converge");
     return [0, 0, 0];
@@ -950,8 +950,8 @@ function findFprTprForSlope(controlPoints, desiredSlope) {
   const pointsArray = Object.values(controlPoints);
   // console.log(pointsArray[0])
   const point = bezier(pointsArray[0], tOptimal);
-  console.log("check point")
-  console.log(point)
+  // console.log("check point")
+  // console.log(point)
   // Return FPR, TPR, and t
   return [point[0], point[1], tOptimal];
 }
@@ -1005,7 +1005,7 @@ function findClosestPairSeparate(tprs, fprs, desiredFpr, desiredTpr) {
 function extractFprTprFromCurvePoints(curvePoints) {
   const pointsArray = Object.values(curvePoints);
   // Check if curvePoints is properly formed
-  console.log(pointsArray[0].length)
+  // console.log(pointsArray[0].length)
   if (!Array.isArray(pointsArray) || pointsArray[0].length === 0) {
     console.error("Invalid curvePoints structure", pointsArray);
     return { fpr: [], tpr: [] };
@@ -1025,9 +1025,9 @@ export const findOptimalPoint = (uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, 
   const HoverB = H/B
   // console.log(curvePoints)
   const slope_of_interest = pD ? HoverB * (1 - pD) / pD : HoverB * (1 - 0.5) / 0.5;
-  console.log(slope_of_interest)
+  // console.log(slope_of_interest)
   const cutoffRational = findFprTprForSlope(curvePoints, slope_of_interest)
-  console.log("cutoff rational")
+  // console.log("cutoff rational")
   // console.log(cutoffRational)
   const [closestFpr, closestTpr] = [cutoffRational[0], cutoffRational[1]];
   // console.log(closestFpr)
@@ -1038,6 +1038,6 @@ export const findOptimalPoint = (uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, 
   const optimalPointCutoff = thresholds[index]
   // tpr_value_optimal_pt = original_tpr
   // fpr_value_optimal_pt = original_fpr
-  console.log({optimalPtFpr, optimalPtTpr, optimalPointCutoff})
+  // console.log({optimalPtFpr, optimalPtTpr, optimalPointCutoff})
   return {optimalPtFpr, optimalPtTpr, optimalPointCutoff};
 };
