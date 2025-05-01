@@ -15,7 +15,9 @@ import {
   calculateRocCurve, 
   calculateAUC,
   fitRocBezier,
-  findOptimalPoint
+  findOptimalPoint,
+  findOptimalPointApar,
+  // extractFprTprFromCurvePoints
 } from '../utils/rocUtils';
 
 // Mock tooltip data (you can replace with your actual data)
@@ -35,7 +37,7 @@ const ApAr = () => {
   const [thresholds, setThresholds] = useState([]);
   const [pLs, setPLs] = useState([]);
   const [pUs, setPUs] = useState([]);
-  const [cutoffOptimalPt, setCutoffOptimalPt] = useState(0);
+  // const [cutoffOptimalPt, setCutoffOptimalPt] = useState(0);
   const [loading, setLoading] = useState(true);
   const [importedData, setImportedData] = useState(null);
   const [classNames, setClassNames] = useState({
@@ -67,6 +69,14 @@ const ApAr = () => {
       curvePoints: [] ,
   
     });
+    const [aparData, setAparData] = useState({ 
+      fpr: [], 
+      tpr: [], 
+      thresholds: [], 
+      auc: 0, 
+      curvePoints: [] ,
+  
+    });
 
   const [optimalCutoff, setOptimalCutoff] = useState(0.5);
   const [optimalPointFpr, setOptimalPointFpr] = useState(0);
@@ -87,10 +97,17 @@ const ApAr = () => {
         generateData();
       }
       setLoading(false);
-    }, 1000);
+    }, );
     
     return () => clearTimeout(timer);
-  }, [dataType]);
+  }, [dataType, diseaseMean, diseaseStd, healthyMean, healthyStd, uTP, uFP, uTN, uFN, pD]);
+
+  useEffect(() => {
+      if (rocData.fpr.length > 0) {
+        // calculateOptimalCutoff();
+        calculateOptimalCutoff();
+      }
+    }, [uTP, uFP, uTN, uFN, pD, rocData]);
 
   const generateData = () => {
       const { predictions: newPredictions, trueLabels: newLabels } = 
@@ -99,18 +116,36 @@ const ApAr = () => {
       setPredictions(newPredictions);
       setTrueLabels(newLabels);
       calculateRoc(newPredictions, newLabels);
+      // calculateOptimalCutoff();
+    };
+
+  const calculateOptimalCutoff = () => {
+      const {fpr, tpr, thresholds, curvePoints} = rocData;
+      // console.log(curvePoints)
+      const {optimalPtFpr, optimalPtTpr, optimalPointCutoff} = findOptimalPoint(uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds);
+      // const { optimalPoint: newOptimalPoint, trueLabels: newLabels } = 
+      //   calculateCutoffOptimal()
+      // This function is now in RocPlot component
+      // Only triggers the useEffect hook in that component
+      setOptimalPointFpr(optimalPtFpr);
+      setOptimalPointTpr(optimalPtTpr);
+      // console.log(optimalCutoff)
+      setOptimalCutoff(optimalPointCutoff);
+  
     };
 
   // Function to calculate ROC curve
     const calculateRoc = (preds, labels) => {
-      const { fpr, tpr, thresholds } = calculateRocCurve(preds, labels);
+      let { fpr, tpr, thresholds } = calculateRocCurve(preds, labels);
       const auc = calculateAUC(fpr, tpr);
       
       // Generate bezier curve points for a smooth curve (simplified in this version)
       const curvePoints = fitRocBezier(fpr, tpr);
-      
-      // console.log(curvePoints)
       setRocData({ fpr, tpr, thresholds, auc, curvePoints });
+
+      // console.log(curvePoints)
+      const {opfpr, optpr} = extractFprTprFromCurvePoints(curvePoints);
+      
       // console.log(rocData)
       
   
@@ -145,11 +180,39 @@ const ApAr = () => {
       // console.log("optimalpt fpr")
       // console.log(optimalPtFpr)
       setOptimalCutoff(optimalPointCutoff);
+
+      // use bezier curve instead
+      fpr = opfpr
+      tpr = optpr
+      // console.log(curvePoints)
+      setAparData({ fpr, tpr, thresholds, auc, curvePoints });
     };
+
+  /**
+   * Extracts FPR and TPR arrays from curvePoints
+   * @param {Array} curvePoints - Array of [x,y] points where x is FPR and y is TPR
+   * @returns {Object} Object containing separate FPR and TPR arrays
+   */
+  function extractFprTprFromCurvePoints(curvePoints) {
+    const pointsArray = Object.values(curvePoints);
+    // Check if curvePoints is properly formed
+    // console.log(pointsArray[0].length)
+    if (!Array.isArray(pointsArray) || pointsArray[0].length === 0) {
+      console.error("Invalid curvePoints structure", pointsArray);
+      return { fpr: [], tpr: [] };
+    }
+    
+    // Extract FPR (x) and TPR (y) values from each point
+    const opfpr = pointsArray[0].map(point => point[0]);
+    const optpr = pointsArray[0].map(point => point[1]);
+    
+    return { opfpr, optpr };
+  }
   // Calculate ApAr from ROC data
   const calculateApAr = useCallback((data) => {
-    const { fpr, tpr, thresholds } = data;
-    
+    const { fpr, tpr, thresholds, curvePoints } = data;
+    // const {opfpr, optpr} = extractFprTprFromCurvePoints(curvePoints);
+
     // Create modelTest data structure (similar to the Python version)
     const modelTest = {
       fpr,
@@ -167,11 +230,11 @@ const ApAr = () => {
     
     // Calculate priors over ROC
     const [calculatedPLs, pStars, calculatedPUs] = modelPriorsOverRoc(modelTest, uTN, uTP, uFN, uFP, 0, HoverB);
-    console.log(calculatedPLs)
+    // console.log(calculatedPLs)
     // Clean thresholds and adjust pL/pU values
-    const cleanedThresholds = thresholds.map(t => Math.min(t, 5));
+    const cleanedThresholds = thresholds//.map(t => Math.min(t, 4));
     const [sortedThresholds, sortedPLs, sortedPUs] = 
-      adjustpLpUClassificationThreshold(cleanedThresholds, calculatedPLs, calculatedPUs);
+      adjustpLpUClassificationThreshold(cleanedThresholds, calculatedPLs, calculatedPUs, false);
     
     // Calculate area without parallel processing
     const [area, largestRangePrior, largestRangePriorThresholdIndex] = 
@@ -187,18 +250,18 @@ const ApAr = () => {
     setArea(finalArea);
     
     // Update optimal cutoff point if needed
-    if (largestRangePriorThresholdIndex >= 0 && largestRangePriorThresholdIndex < sortedThresholds.length) {
-      setCutoffOptimalPt(sortedThresholds[largestRangePriorThresholdIndex]);
-    }
+    // if (largestRangePriorThresholdIndex >= 0 && largestRangePriorThresholdIndex < sortedThresholds.length) {
+    //   setOptimalCutoff(sortedThresholds[largestRangePriorThresholdIndex]);
+    // }
     
-  }, [uTP, uFP, uTN, uFN, pD]);
+  }, [uTP, uFP, uTN, uFN]);
 
   // Effect to recalculate ApAr when parameters change
   useEffect(() => {
     if (rocData.fpr.length > 0) {
-      calculateApAr(rocData);
+      calculateApAr(aparData);
     }
-  }, [rocData, uTP, uFP, uTN, uFN, pD, calculateApAr]);
+  }, [aparData, uTP, uFP, uTN, uFN, pD, calculateApAr]);
 
   // Handle data type change
   const handleDataTypeChange = (e) => {
@@ -237,12 +300,13 @@ const ApAr = () => {
       const csvData = event.target.result;
       processCSV(csvData);
     };
-    
+    // console.log(file)
     reader.readAsText(file);
     setImportedFile(file);
     setShowClassNameInputs(true);
   };
   
+  // Process uploaded CSV
   // Process uploaded CSV
   const processCSV = (csvData) => {
     const lines = csvData.split('\n');
@@ -351,7 +415,7 @@ const ApAr = () => {
     optimalCutoffText: () => {
       const HoverB = (uTN - uFP) / (uTP - uFN + 0.000000001);
       const slopeOfInterest = HoverB * (1 - pD) / pD;
-      return `H/B of ${HoverB.toFixed(2)} gives a slope of ${slopeOfInterest.toFixed(2)} at the optimal cutoff ${cutoffOptimalPt.toFixed(2)}`;
+      return `H/B of ${HoverB.toFixed(2)} gives a slope of ${slopeOfInterest.toFixed(2)} at the optimal cutoff ${optimalCutoff.toFixed(2)}`;
     },
     diseaseMeanText: `Disease Mean: ${diseaseMean.toFixed(2)}`,
     diseaseStdText: `Disease Standard Deviation: ${diseaseStd.toFixed(2)}`,
@@ -380,7 +444,7 @@ const ApAr = () => {
           onDataTypeChange={handleDataTypeChange}
           onFileUpload={handleFileUpload}
           cutoff={cutoff}
-          onCutoffChange={handleCutoffChange}
+          onCutoffChange={(e) => handleCutoffChange(parseFloat(e.target.value))}
           uTP={uTP}
           onUTPChange={handleUTPChange}
           uFP={uFP}
@@ -412,6 +476,9 @@ const ApAr = () => {
             pLs={pLs}
             pUs={pUs}
             cutoff={cutoff}
+            optimalPointFpr={optimalPointFpr}
+            optimalPointTpr={optimalPointTpr}
+            optimalCutoff={optimalCutoff}
             area={area}
             tooltipData={tooltipData.apar}
           />

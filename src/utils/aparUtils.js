@@ -69,7 +69,7 @@ export const generateSimulatedData = (diseaseMean, diseaseStd, healthyMean, heal
  * @returns {Array} If scalar inputs: a list of three thresholds [pL, pStar, pU]
  *                  If array inputs: three lists [pLs, pStars, pUs] containing thresholds for each input pair
  */
-function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u) {
+function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u, simulated = true) {
   // Determine if inputs are scalar or array-like
   const isArrayInput = Array.isArray(sens);
   
@@ -94,7 +94,10 @@ function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u) {
       }
       
       // Bound pStar within [0, 1]
-      pStar = pStar > 1 ? 1 : pStar;
+      if (!simulated){
+        pStar = pStar > 1 ? 1 : pStar;
+      }
+
       pStar = (pStar < 0 && pStar !== -999) ? 0 : pStar;
       
       // Calculate pU (upper threshold)
@@ -125,7 +128,10 @@ function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u) {
       }
       
       // Bound pU within [0, 1]
-      pU = pU > 1 ? 1 : pU;
+      if (!simulated){
+        pU = pU > 1 ? 1 : pU;
+      }
+      
       pU = (pU < 0 && pU !== -999) ? 0 : pU;
       
       // Calculate pL (lower threshold)
@@ -142,7 +148,10 @@ function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u) {
       }
       
       // Bound pL within [0, 1]
-      pL = pL > 1 ? 1 : pL;
+      if (!simulated){
+        pL = pL > 1 ? 1 : pL;
+      }
+      
       pL = (pL < 0 && pL !== -999) ? 0 : pL;
       
       return [pL, pStar, pU];
@@ -162,7 +171,10 @@ function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u) {
       }
       
       // Bound pStar within [0, 1]
-      pStarVal = pStarVal > 1 ? 1 : pStarVal;
+      if (!simulated){
+        pStarVal = pStarVal > 1 ? 1 : pStarVal;
+      }
+      
       pStarVal = (pStarVal < 0 && pStarVal !== -999) ? 0 : pStarVal;
       
       // Initialize result arrays
@@ -187,7 +199,9 @@ function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u) {
           }
           
           // Bound pU within [0, 1]
-          pU = pU > 1 ? 1 : pU;
+          if (!simulated){
+            pU = pU > 1 ? 1 : pU;
+          }
           pU = (pU < 0 && pU !== -999) ? 0 : pU;
           
           // Calculate pL
@@ -202,7 +216,9 @@ function pLpStarpUThresholds(sens, spec, uTN, uTP, uFN, uFP, u) {
           }
           
           // Bound pL within [0, 1]
-          pL = pL > 1 ? 1 : pL;
+          if (!simulated){
+            pL = pL > 1 ? 1 : pL;
+          }
           pL = (pL < 0 && pL !== -999) ? 0 : pL;
           
           // Add results to arrays
@@ -287,47 +303,65 @@ export function priorFiller(priorList, lower) {
  * @param {Array} priorList - list of priors
  * @returns {Array} - modified list
  */
-export function priorModifier(priorList) {
+function priorModifier(priorList) {
+  // Convert to a new array to avoid modifying the original
   const priorArray = [...priorList];
   const lenList = priorArray.length;
   const midPoint = lenList / 2;
   
-  for (let i = 0; i < lenList; i++) {
-    // Check if in first half
-    if (i < midPoint) {
-      // Check conditions for first half
-      if (i + 3 < lenList) {
-        if (priorArray[i] === 1 && 
-            priorArray[i + 2] > priorArray[i + 1] && 
-            priorArray[i + 3] > priorArray[i + 2]) {
+  // Create shifted arrays for easier conditions checking
+  // JavaScript doesn't have np.roll, so we'll implement it manually
+  const roll = (arr, shift) => {
+      const len = arr.length;
+      const normalizedShift = ((shift % len) + len) % len;
+      return [...arr.slice(-normalizedShift), ...arr.slice(0, -normalizedShift)];
+  };
+  
+  const shifted_plus_1 = roll(priorArray, -1);
+  const shifted_plus_2 = roll(priorArray, -2);
+  const shifted_plus_3 = roll(priorArray, -3);
+  
+  const shifted_minus_1 = roll(priorArray, 1);
+  const shifted_minus_2 = roll(priorArray, 2);
+  const shifted_minus_3 = roll(priorArray, 3);
+  
+  // Process first half
+  for (let i = 0; i < midPoint; i++) {
+      // Condition 1: if current is 1 and next values are increasing
+      if (priorArray[i] === 1 && 
+          shifted_plus_2[i] > shifted_plus_1[i] && 
+          shifted_plus_3[i] > shifted_plus_2[i]) {
           priorArray[i] = 0;
-        } else if (priorArray[i] === 0 && 
-                  priorArray[i + 2] < priorArray[i + 1] && 
-                  priorArray[i + 3] < priorArray[i + 2]) {
-          priorArray[i] = 1;
-        }
       }
-    } 
-    // Check if in second half
-    else {
-      // Check conditions for second half
-      if (i - 3 >= 0) {
-        if (priorArray[i] === 1 && 
-            priorArray[i - 2] > priorArray[i - 1] && 
-            priorArray[i - 3] > priorArray[i - 2]) {
+      
+      // Condition 2: if current is 0 and next values are decreasing
+      if (priorArray[i] === 0 && 
+          shifted_plus_2[i] < shifted_plus_1[i] && 
+          shifted_plus_3[i] < shifted_plus_2[i]) {
+          priorArray[i] = 1;
+      }
+  }
+  
+  // Process second half
+  for (let i = midPoint; i < lenList; i++) {
+      // Condition 3: if current is 1 and previous values are increasing
+      if (priorArray[i] === 1 && 
+          shifted_minus_2[i] > shifted_minus_1[i] && 
+          shifted_minus_3[i] > shifted_minus_2[i]) {
           priorArray[i] = 0;
-        } else if (priorArray[i] === 0 && 
-                  priorArray[i - 2] < priorArray[i - 1] && 
-                  priorArray[i - 3] < priorArray[i - 2]) {
-          priorArray[i] = 1;
-        }
       }
-    }
+      
+      // Condition 4: if current is 0 and previous values are decreasing
+      if (priorArray[i] === 0 && 
+          shifted_minus_2[i] < shifted_minus_1[i] && 
+          shifted_minus_3[i] < shifted_minus_2[i]) {
+          priorArray[i] = 1;
+      }
   }
   
   // Special condition for last element
   if (lenList > 1 && priorArray[lenList - 1] === 0 && priorArray[lenList - 2] !== 0) {
-    priorArray[lenList - 1] = priorArray[lenList - 2];
+      priorArray[lenList - 1] = priorArray[lenList - 2];
   }
   
   return priorArray;
@@ -338,11 +372,16 @@ export function priorModifier(priorList) {
  * @param {Object} row - Object with thresholds property
  * @returns {Array} - adjusted thresholds
  */
-export function extractThresholds(row) {
+export function extractThresholds(row, simulated = true) {
   if (!row.thresholds) return null;
+  if (!simulated){
+    // Cap thresholds at 1
+    return row.thresholds.map(t => Math.min(t, 1));
+  }else{
+    return row.thresholds
+  }
   
-  // Cap thresholds at 1
-  return row.thresholds.map(t => Math.min(t, 1));
+  
 }
 
 /**

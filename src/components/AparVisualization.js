@@ -18,6 +18,9 @@ const AparVisualization = ({
   pLs, 
   pUs, 
   cutoff, 
+  optimalPointFpr, 
+  optimalPointTpr, 
+  optimalCutoff, 
   area,
   tooltipData
 }) => {
@@ -43,14 +46,38 @@ const AparVisualization = ({
         line: { color: 'orange' }
       },
       // Add a vertical line at cutoff
-      {
-        x: [cutoff, cutoff],  // Same x value for both points for a vertical line
-        y: [0, 1],  // Full height of the y-axis
-        mode: 'lines',
-        line: { color: 'green', width: 2, dash: 'dash' },
-        name: "Selected threshold"
-      }
+      // {
+      //   x: [cutoff, cutoff],  // Same x value for both points for a vertical line
+      //   y: [0, 1],  // Full height of the y-axis
+      //   // mode: 'lines',
+      //   line: { color: 'green', width: 2, dash: 'dash' },
+      //   name: "Selected threshold"
+      // }
     ];
+
+    data.push({
+      x: [cutoff, cutoff],
+      y: [0, 1],
+      mode: 'lines',
+      name: 'Selected threshold',
+      line: { 
+        color: 'green', 
+        width: 2,
+        dash: 'dash'  // Makes it a dashed line for better visibility
+      }
+    });
+
+    data.push({
+      x: [optimalCutoff, optimalCutoff],
+      y: [0, 1],
+      mode: 'lines',
+      name: 'Optimal threshold',
+      line: { 
+        color: 'red', 
+        width: 2,
+        dash: 'dash'  // Makes it a dashed line for better visibility
+      }
+    });
     
     // Create layout
     const layout = {
@@ -62,12 +89,12 @@ const AparVisualization = ({
       xaxis: {
         title: 'Probability Cutoff Threshold',
         tickmode: 'array', 
-        tickvals: Array.from({ length: 11 }, (_, i) => i * 0.1)
+        // tickvals: Array.from({ length: 31 }, (_, i) => i * 0.1)
       },
       yaxis: {
         title: 'Prior Probability (Prevalence)',
         tickmode: 'array', 
-        tickvals: Array.from({ length: 11 }, (_, i) => i * 0.1)
+        // tickvals: Array.from({ length: 11 }, (_, i) => i * 0.1)
       },
       template: 'plotly_white',
       annotations: [

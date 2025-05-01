@@ -1041,3 +1041,27 @@ export const findOptimalPoint = (uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, 
   // console.log({optimalPtFpr, optimalPtTpr, optimalPointCutoff})
   return {optimalPtFpr, optimalPtTpr, optimalPointCutoff};
 };
+
+export const findOptimalPointApar = (uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds) => {
+ 
+  const H = uTN - uFP
+  const B = uTP - uFN + 0.000000001
+  const HoverB = H/B
+  // console.log(curvePoints)
+  const slope_of_interest = pD ? HoverB * (1 - pD) / pD : HoverB * (1 - 0.5) / 0.5;
+  // console.log(slope_of_interest)
+  const cutoffRational = findFprTprForSlope(curvePoints, slope_of_interest)
+  // console.log("cutoff rational")
+  // console.log(cutoffRational)
+  const [closestFpr, closestTpr] = [cutoffRational[0], cutoffRational[1]];
+  // console.log(closestFpr)
+  const {opfpr, optpr} = extractFprTprFromCurvePoints(curvePoints);
+  // const opfpr = fpr;
+  // const optpr = tpr;
+  const {optimalPtFpr, optimalPtTpr, index} = findClosestPairSeparate(optpr, opfpr, closestFpr, closestTpr)
+  const optimalPointCutoff = thresholds[index]
+  // tpr_value_optimal_pt = original_tpr
+  // fpr_value_optimal_pt = original_fpr
+  // console.log({optimalPtFpr, optimalPtTpr, optimalPointCutoff})
+  return {optimalPtFpr, optimalPtTpr, optimalPointCutoff};
+};
