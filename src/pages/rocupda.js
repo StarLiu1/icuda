@@ -691,26 +691,48 @@ const Rocupda = () => {
       <div className="content-area">
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row', paddingLeft: '50px' }}>
-
-            {/* Distribution Plot */}
-            <div style={{ height: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
-              <div style={{ width: '45%', paddingTop: '25px' }}>
-                {rocData.fpr.length > 0 && (
-                  <DistributionPlot 
-                    dataType={dataType}
-                    predictions={predictions}
-                    trueLabels={trueLabels}
-                    classNames={classNames}
-                    cutoff={cutoff}
-                    optimalCutoff={optimalCutoff}
-                    diseaseMean={diseaseMean}
-                    diseaseStd={diseaseStd}
-                    healthyMean={healthyMean}
-                    healthyStd={healthyStd}
-                  />
-                )}
+            {/* Full Size Distribution Plot */}
+            {!isShowingApar && (
+                <div style={{ height: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
+                <div style={{ width: '100%', paddingTop: '25px' }}>
+                  {rocData.fpr.length > 0 && (
+                    <DistributionPlot 
+                      dataType={dataType}
+                      predictions={predictions}
+                      trueLabels={trueLabels}
+                      classNames={classNames}
+                      cutoff={cutoff}
+                      optimalCutoff={optimalCutoff}
+                      diseaseMean={diseaseMean}
+                      diseaseStd={diseaseStd}
+                      healthyMean={healthyMean}
+                      healthyStd={healthyStd}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+            {/* Smaller Size Distribution Plot */}
+            {isShowingApar && (
+                <div style={{ height: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
+                <div style={{ width: '45%', paddingTop: '25px' }}>
+                  {rocData.fpr.length > 0 && (
+                    <DistributionPlot 
+                      dataType={dataType}
+                      predictions={predictions}
+                      trueLabels={trueLabels}
+                      classNames={classNames}
+                      cutoff={cutoff}
+                      optimalCutoff={optimalCutoff}
+                      diseaseMean={diseaseMean}
+                      diseaseStd={diseaseStd}
+                      healthyMean={healthyMean}
+                      healthyStd={healthyStd}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
             {/* // Add this after your existing utility plot div, but before the closing content-area div: */}
             {isShowingApar && (
               <div style={{ height: '100%', width: '55%', display: 'flex', flexDirection: 'column', paddingLeft: '15px', paddingTop: '25px' }}>
