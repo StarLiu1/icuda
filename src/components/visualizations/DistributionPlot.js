@@ -191,7 +191,7 @@ const DistributionPlot = ({
         xaxis: { title: 'Value' },
         yaxis: { title: 'Probability Density' },
         template: 'plotly_white',
-        margin: { l: 30, r: 20, t: 50, b: 0 },
+        margin: { l: 50, r: 20, t: 30, b: 0 },
         annotations: annotations
       };
     }
@@ -203,7 +203,7 @@ const DistributionPlot = ({
     <Plot
       data={generateDistributionPlot().data}
       layout={generateDistributionPlot().layout}
-      style={{ height: '45vh' }}
+      style={{ height: '45vh' , width: '35vw'}}
     />
   );
 };

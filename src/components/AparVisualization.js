@@ -21,8 +21,10 @@ const AparVisualization = ({
   optimalPointFpr, 
   optimalPointTpr, 
   optimalCutoff, 
-  area,
-  tooltipData
+  area, 
+  tooltipData,
+  width = '100%',
+  height = '400px'
 }) => {
   
   // Generate plot data
@@ -59,7 +61,7 @@ const AparVisualization = ({
       x: [cutoff, cutoff],
       y: [0, 1],
       mode: 'lines',
-      name: 'Selected threshold',
+      name: 'Selected',
       line: { 
         color: 'green', 
         width: 2,
@@ -71,7 +73,7 @@ const AparVisualization = ({
       x: [optimalCutoff, optimalCutoff],
       y: [0, 1],
       mode: 'lines',
-      name: 'Optimal threshold',
+      name: 'Optimal',
       line: { 
         color: 'red', 
         width: 2,
@@ -124,7 +126,9 @@ const AparVisualization = ({
           bordercolor: 'black',
           borderwidth: 1
         }
-      ]
+      ],
+      margin: { l: 50, r: 0, t: 30, b: 40 }
+
     };
     
     return { data, layout };
@@ -135,7 +139,7 @@ const AparVisualization = ({
       <Plot
         data={generateAparPlot().data}
         layout={generateAparPlot().layout}
-        style={{ height: '92vh', width: '70vw' }}
+        style={{ height: height, width: width}}
       />
       
       {/* Info button */}

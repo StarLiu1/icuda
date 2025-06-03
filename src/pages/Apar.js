@@ -494,6 +494,8 @@ const ApAr = () => {
             optimalCutoff={optimalCutoff}
             area={area}
             tooltipData={tooltipData.apar}
+            width='70vw'
+            height='92vh'
           />
         )}
       </div>

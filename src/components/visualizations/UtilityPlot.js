@@ -125,7 +125,7 @@ const UtilityPlot = ({
       xaxis: { title: 'Probability of Disease (p)' },
       yaxis: { title: 'Expected Utility' },
       template: 'plotly_white',
-      margin: { l: 30, r: 20, t: 30, b: 70 },
+      margin: { l: 50, r: 20, t: 30, b: 70 },
       annotations: [
         {
           x: pL,
@@ -168,7 +168,7 @@ const UtilityPlot = ({
       <Plot
         data={generateUtilityPlot().data}
         layout={generateUtilityPlot().layout}
-        style={{ height: '47vh', width: '35vw' }}
+        style={{ height: '47vh', width: '40vw' }}
       />
       
       <div style={{ display: 'flex', alignItems: 'center', height: '5%', paddingTop: '1.75%' }}>

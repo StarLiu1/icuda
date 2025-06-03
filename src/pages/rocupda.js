@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from '../components/LoadingOverlay';
 
@@ -10,9 +10,24 @@ import {
   findOptimalPoint
 } from '../utils/rocUtils';
 
+import { 
+  modelPriorsOverRoc, 
+  adjustpLpUClassificationThreshold,
+  calculateAreaChunk
+} from '../utils/aparUtils';
+
 // Import visualization components
 import { RocPlot, UtilityPlot, DistributionPlot } from '../components/visualizations';
+import AparVisualization from '../components/AparVisualization';
 
+// Add tooltip data
+const tooltipData = {
+  apar: {
+    tooltip_text: "Applicability Area (ApAr) represents the range of disease prevalence values where using the test is optimal.",
+    link_text: "Learn more about ApAr",
+    link_url: "#"
+  }
+};
 // Helper function to generate curve points (simplified version of Bezier curve)
 // const generateCurvePoints = (fpr, tpr, numPoints = 100) => {
 //   const points = [];
@@ -40,7 +55,7 @@ import { RocPlot, UtilityPlot, DistributionPlot } from '../components/visualizat
 // };
 
 const Rocupda = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   // Loading state - only for initial page load
   const [isLoading, setIsLoading] = useState(true);
@@ -79,6 +94,13 @@ const Rocupda = () => {
   const [optimalPointTpr, setOptimalPointTpr] = useState(0);
   const [tprValue, setTprValue] = useState(0);
   const [fprValue, setFprValue] = useState(0);
+
+  // Add these state variables for ApAr
+  const [area, setArea] = useState(0);
+  const [thresholds, setThresholds] = useState([]);
+  const [pLs, setPLs] = useState([]);
+  const [pUs, setPUs] = useState([]);
+
   
   // UI state
   const [drawMode, setDrawMode] = useState('point'); // 'point' or 'line'
@@ -337,9 +359,17 @@ const Rocupda = () => {
   
   // Show ApAr figure
   const showAparFigure = () => {
-    setIsShowingApar(true);
-    navigate('/apar');
+    setIsShowingApar(!isShowingApar);
+    // navigate('/apar');
+    calculateApAr(rocData);
   };
+
+  // Add this useEffect after your existing ones
+  useEffect(() => {
+    if (rocData.fpr.length > 0) {
+      calculateApAr(rocData);
+    }
+  }, [rocData, uTP, uFP, uTN, uFN, pD]);
   
   // Helper function to format display text
   const formatDisplayText = {
@@ -373,6 +403,37 @@ const Rocupda = () => {
       return { min, max, step, marks };
     }
   };
+
+  // Add this function before your existing functions
+  const calculateApAr = useCallback((data) => {
+    const { fpr, tpr, thresholds, curvePoints } = data;
+    
+    const modelTest = {
+      fpr,
+      tpr,
+      thresholds
+    };
+    
+    const H = uTN - uFP;
+    const B = uTP - uFN + 0.000000001;
+    const HoverB = H / B;
+    
+    const [calculatedPLs, pStars, calculatedPUs] = modelPriorsOverRoc(modelTest, uTN, uTP, uFN, uFP, 0, HoverB);
+    
+    const cleanedThresholds = thresholds;
+    const [sortedThresholds, sortedPLs, sortedPUs] = 
+      adjustpLpUClassificationThreshold(cleanedThresholds, calculatedPLs, calculatedPUs, false);
+    
+    const [area, largestRangePrior, largestRangePriorThresholdIndex] = 
+      calculateAreaChunk(0, sortedPLs.length - 1, sortedPLs, sortedPUs, sortedThresholds);
+    
+    const finalArea = Math.min(Math.round(area * 1000) / 1000, 1);
+    
+    setThresholds(sortedThresholds);
+    setPLs(sortedPLs);
+    setPUs(sortedPUs);
+    setArea(finalArea);
+  }, [uTP, uFP, uTN, uFN]);
   
   // Render the component
   return (
@@ -629,31 +690,54 @@ const Rocupda = () => {
       {/* Content Area */}
       <div className="content-area">
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-          {/* Distribution Plot */}
-          <div style={{ height: '50%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
-            <div style={{ width: '100%', paddingTop: '50px' }}>
-              {rocData.fpr.length > 0 && (
-                <DistributionPlot 
-                  dataType={dataType}
-                  predictions={predictions}
-                  trueLabels={trueLabels}
-                  classNames={classNames}
-                  cutoff={cutoff}
-                  optimalCutoff={optimalCutoff}
-                  diseaseMean={diseaseMean}
-                  diseaseStd={diseaseStd}
-                  healthyMean={healthyMean}
-                  healthyStd={healthyStd}
-                />
-              )}
+          <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row', paddingLeft: '50px' }}>
+
+            {/* Distribution Plot */}
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
+              <div style={{ width: '45%', paddingTop: '25px' }}>
+                {rocData.fpr.length > 0 && (
+                  <DistributionPlot 
+                    dataType={dataType}
+                    predictions={predictions}
+                    trueLabels={trueLabels}
+                    classNames={classNames}
+                    cutoff={cutoff}
+                    optimalCutoff={optimalCutoff}
+                    diseaseMean={diseaseMean}
+                    diseaseStd={diseaseStd}
+                    healthyMean={healthyMean}
+                    healthyStd={healthyStd}
+                  />
+                )}
+              </div>
             </div>
+            {/* // Add this after your existing utility plot div, but before the closing content-area div: */}
+            {isShowingApar && (
+              <div style={{ height: '100%', width: '55%', display: 'flex', flexDirection: 'column', paddingLeft: '15px', paddingTop: '25px' }}>
+                {/* <h3 style={{ textAlign: 'center', margin: '0' }}>Applicability Area (ApAr)</h3> */}
+                {pLs.length > 0 && pUs.length > 0 && (
+                  <AparVisualization 
+                    thresholds={thresholds}
+                    pLs={pLs}
+                    pUs={pUs}
+                    cutoff={cutoff}
+                    optimalPointFpr={optimalPointFpr}
+                    optimalPointTpr={optimalPointTpr}
+                    optimalCutoff={optimalCutoff}
+                    area={area}
+                    tooltipData={tooltipData.apar}
+                    width='40vw'
+                    height='45vh'
+                  />
+                )}
+              </div>
+            )}
           </div>
-          
           {/* ROC and Utility Plots */}
-          <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row' }}>
+          <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row', paddingLeft: '50px'}}>
             {/* ROC Plot */}
-            <div style={{ height: '100%', width: '50%', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ height: '95%', margin: 0 }}>
+            <div style={{ height: '100%', width: '45%', display: 'flex', flexDirection: 'column'}}>
+              <div style={{ height: '100%'}}>
                 {rocData.fpr.length > 0 && (
                   <RocPlot 
                     rocData={rocData}
@@ -681,7 +765,7 @@ const Rocupda = () => {
             </div>
             
             {/* Utility Plot */}
-            <div style={{ width: '50%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '55%', display: 'flex', flexDirection: 'column' }}>
               <div>
                 {rocData.fpr.length > 0 && (
                   <UtilityPlot 
@@ -700,7 +784,9 @@ const Rocupda = () => {
             </div>
           </div>
         </div>
+        {/* apar here  */}
       </div>
+      
     </div>
   );
 };

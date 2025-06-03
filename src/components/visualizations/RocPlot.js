@@ -259,7 +259,7 @@ const RocPlot = ({
       xaxis: { title: 'False Positive Rate (FPR)' },
       yaxis: { title: 'True Positive Rate (TPR)' },
       template: 'plotly_white',
-      margin: { l: 40, r: 0, t: 30, b: 30 },
+      margin: { l: 50, r: 0, t: 30, b: 30 },
       shapes: shapes,
       annotations: [
         {
@@ -307,7 +307,7 @@ const RocPlot = ({
         {/* <div style={{ width: '5%' }}></div> */}
         <button
           onClick={toggleDrawMode}
-          style={{ paddingBottom: '0', width: '70%', marginLeft: '5%' }}
+          style={{ paddingBottom: '10', width: '70%', marginLeft: '5%' }}
         >
           {drawMode === 'point' 
             ? 'Switch to Line Mode (select region for partial AUC)' 
@@ -321,7 +321,7 @@ const RocPlot = ({
           linkText={tooltipData.roc.link_text}
           linkUrl={tooltipData.roc.link_url}
           top="-215px"
-          left="50%"
+          left="0%"
           width="200px"
         />
       </div>
