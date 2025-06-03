@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const LoadingOverlay = ({ text, onHide }) => {
-  // Split the input text by the '\n' character for line breaks
-  const textParts = text.split('\n');
+  // Replace newline characters (\n) with HTML line break tags (<br />)
+  const htmlText = text.replace(/\n/g, '<br />');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onHide();
+    }, 5000);
+    
+    return () => clearTimeout(timer);
+  }, [onHide]);
   
   return (
     <div 
@@ -25,18 +33,15 @@ const LoadingOverlay = ({ text, onHide }) => {
       <div style={{
         textAlign: "center",
       }}>
-        <div style={{
-          fontSize: "24px",
-          textAlign: "center",
-          marginBottom: "10px"
-        }}>
-          {textParts.map((part, index) => (
-            <React.Fragment key={index}>
-              {part}
-              {index < textParts.length - 1 && <br />}
-            </React.Fragment>
-          ))}
-        </div>
+        <div 
+          style={{
+            fontSize: "24px",
+            textAlign: "center",
+            marginBottom: "10px"
+          }}
+          // Use dangerouslySetInnerHTML to render the string as HTML
+          dangerouslySetInnerHTML={{ __html: htmlText }}
+        />
       </div>
     </div>
   );

@@ -30,6 +30,10 @@ const tooltipData = {
 };
 
 const ApAr = () => {
+
+  // Loading state - only for initial page load
+  const [isLoading, setIsLoading] = useState(true);
+  
   // State variables
   const [dataType, setDataType] = useState('simulated');
   const [area, setArea] = useState(0);
@@ -89,6 +93,11 @@ const ApAr = () => {
   const [showClassNameInputs, setShowClassNameInputs] = useState(false);
   const [positiveClassName, setPositiveClassName] = useState('');
   const [negativeClassName, setNegativeClassName] = useState('');
+
+  // Handle loading overlay click
+  const handleLoadingClick = () => {
+    setIsLoading(false);
+  };
 
   // Handle loading and initial data generation
   useEffect(() => {
@@ -182,8 +191,8 @@ const ApAr = () => {
       setOptimalCutoff(optimalPointCutoff);
 
       // use bezier curve instead
-      fpr = opfpr
-      tpr = optpr
+      // fpr = opfpr
+      // tpr = optpr
       // console.log(curvePoints)
       setAparData({ fpr, tpr, thresholds, auc, curvePoints });
     };
@@ -430,10 +439,14 @@ const ApAr = () => {
 
   return (
     <div className="main-content" style={{ height: '100vh', display: 'flex', width: '100%', paddingLeft: '10px', paddingTop: '5px', flexDirection: 'row' }}>
-      {loading && (
-        <LoadingOverlay
-          text="Welcome to the ApAr dashboard!\nThis specific graph can take up to 20 seconds. Thank you for your patience! We will make it better!\n\nClick anywhere to dismiss or this message will disappear automatically."
-          onHide={() => setLoading(false)}
+
+
+      {isLoading && (
+        <LoadingOverlay 
+        text="Welcome to the ApAr dashboard!
+        <br /><br />
+        Click anywhere to dismiss or this message will disappear automatically."
+        onHide={handleLoadingClick}
         />
       )}
       

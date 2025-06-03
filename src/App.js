@@ -29,12 +29,12 @@ function App() {
   return (
     <Router>
       <div className="App">
-        {isLoading && (
+        {/* {isLoading && (
           <LoadingOverlay 
             text="Welcome to the home dashboard!\nGraphics can take up to 10 seconds on initial load. Subsequent loading will be faster (~5 seconds).\nThank you for your patience!\n\nClick anywhere to dismiss or this message will disappear automatically."
             onHide={handleLoadingClick}
           />
-        )}
+        )} */}
         <AppBar />
         <Routes>
           <Route path="/" element={<RocUpda />} />

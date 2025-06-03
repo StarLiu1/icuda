@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LoadingOverlay from '../components/LoadingOverlay';
+
 import { 
   generateSimulatedData,
   calculateRocCurve, 
@@ -39,6 +41,10 @@ import { RocPlot, UtilityPlot, DistributionPlot } from '../components/visualizat
 
 const Rocupda = () => {
   const navigate = useNavigate();
+
+  // Loading state - only for initial page load
+  const [isLoading, setIsLoading] = useState(true);
+
   
   // State variables
   const [dataType, setDataType] = useState('simulated');
@@ -102,6 +108,11 @@ const Rocupda = () => {
       calculateOptimalCutoff();
     }
   }, [uTP, uFP, uTN, uFN, pD, rocData]);
+
+  // Handle loading overlay click
+  const handleLoadingClick = () => {
+    setIsLoading(false);
+  };
   
   // Function to generate simulated data
   const generateData = () => {
@@ -366,6 +377,14 @@ const Rocupda = () => {
   // Render the component
   return (
     <div className="main-content">
+      {isLoading && (
+        <LoadingOverlay 
+          text="Welcome to the home dashboard!
+                  <br /><br />
+                Click anywhere to dismiss or this message will disappear automatically."
+          onHide={handleLoadingClick}
+        />
+      )}
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-inner">

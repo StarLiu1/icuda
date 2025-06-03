@@ -316,29 +316,55 @@ function priorModifier(priorList) {
       const normalizedShift = ((shift % len) + len) % len;
       return [...arr.slice(-normalizedShift), ...arr.slice(0, -normalizedShift)];
   };
+  console.log(priorArray)
+  const shifted_plus_1 = roll(priorArray, 1);
+  const shifted_plus_2 = roll(priorArray, 2);
+  const shifted_plus_3 = roll(priorArray, 3);
   
-  const shifted_plus_1 = roll(priorArray, -1);
-  const shifted_plus_2 = roll(priorArray, -2);
-  const shifted_plus_3 = roll(priorArray, -3);
+  const shifted_minus_1 = roll(priorArray, -1);
+  const shifted_minus_2 = roll(priorArray, -2);
+  const shifted_minus_3 = roll(priorArray, -3);
   
-  const shifted_minus_1 = roll(priorArray, 1);
-  const shifted_minus_2 = roll(priorArray, 2);
-  const shifted_minus_3 = roll(priorArray, 3);
+  // Helper function to find series of 1s followed by 0s in first half
+  const findAndModifyOnesFollowedByZeros = () => {
+    let i = 0;
+    while (i < midPoint) {
+      if (priorArray[i] === 1) {
+        // Find the end of the series of 1s
+        let onesStart = i;
+        while (i < midPoint && priorArray[i] === 1) {
+          i++;
+        }
+        // Check if the series of 1s is followed by 0s
+        if (i < lenList && priorArray[i] === 0) {
+          // Change all the 1s in this series to 0s
+          for (let j = onesStart; j < i; j++) {
+            priorArray[j] = 0;
+          }
+        }
+      } else {
+        i++;
+      }
+    }
+  };
   
-  // Process first half
+  // Apply the new condition for first half
+  findAndModifyOnesFollowedByZeros();
+  
+  // Process first half (existing conditions)
   for (let i = 0; i < midPoint; i++) {
       // Condition 1: if current is 1 and next values are increasing
       if (priorArray[i] === 1 && 
           shifted_plus_2[i] > shifted_plus_1[i] && 
           shifted_plus_3[i] > shifted_plus_2[i]) {
-          priorArray[i] = 0;
+          // priorArray[i] = 0;
       }
       
-      // Condition 2: if current is 0 and next values are decreasing
-      if (priorArray[i] === 0 && 
+      // Condition 2: if current is 1 and next values are decreasing
+      if (priorArray[i] === 1 && 
           shifted_plus_2[i] < shifted_plus_1[i] && 
           shifted_plus_3[i] < shifted_plus_2[i]) {
-          priorArray[i] = 1;
+          priorArray[i] = 0;
       }
   }
   
@@ -348,14 +374,14 @@ function priorModifier(priorList) {
       if (priorArray[i] === 1 && 
           shifted_minus_2[i] > shifted_minus_1[i] && 
           shifted_minus_3[i] > shifted_minus_2[i]) {
-          priorArray[i] = 0;
+          // priorArray[i] = 0;
       }
       
       // Condition 4: if current is 0 and previous values are decreasing
       if (priorArray[i] === 0 && 
           shifted_minus_2[i] < shifted_minus_1[i] && 
           shifted_minus_3[i] < shifted_minus_2[i]) {
-          priorArray[i] = 1;
+          // priorArray[i] = 1;
       }
   }
   
@@ -458,6 +484,8 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
   let area = 0;
   let largestRangePrior = 0;
   let largestRangePriorThresholdIndex = -999;
+  let dx = 0;
+
   
   for (let i = start; i < end; i++) {
     if (i < pLs.length - 1) {
@@ -468,12 +496,23 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
       const pU1 = pUs[i + 1];
       const t0 = thresholds[i];
       const t1 = thresholds[i + 1];
-      
+      console.log(area)
       // Skip if thresholds are identical (would cause division by zero)
       if (t0 === t1) continue;
+
+      if (t1 - t0 == -Infinity){
+        // console.log(t1 - t0)
+        dx = 0;
+      }else{
+        console.log('not neg inf')
+        console.log(t0 - t1)
+
+        dx = t0 - t1;
+      }
       
       // Case 1: Both endpoints have valid ranges (pL < pU)
       if (pL0 < pU0 && pL1 < pU1) {
+        console.log('here')
         // Find the range of priors
         const rangePrior = pU0 - pL0;
         
@@ -485,15 +524,15 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
         
         // Calculate average range using trapezoidal rule
         const avgRangePrior = ((pU0 - pL0) + (pU1 - pL1)) / 2;
-        
+        // console.log(dx)
         // Accumulate area
-        area += Math.abs(avgRangePrior) * Math.abs(t1 - t0);
+        area += Math.abs(avgRangePrior) * Math.abs(dx);
       }
       // Case 2: Intersection where pL > pU at first point, pL < pU at second point
       else if (pL0 > pU0 && pL1 < pU1) {
         // Calculate intersection point
-        const m_upper = (pU1 - pU0) / (t1 - t0);
-        const m_lower = (pL1 - pL0) / (t1 - t0);
+        const m_upper = (pU1 - pU0) / (dx);
+        const m_lower = (pL1 - pL0) / (dx);
         
         // Skip if lines are parallel
         if (m_upper === m_lower) continue;
@@ -513,8 +552,8 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
       // Case 3: Intersection where pL < pU at first point, pL > pU at second point
       else if (pL0 < pU0 && pL1 > pU1) {
         // Calculate intersection point
-        const m_upper = (pU1 - pU0) / (t1 - t0);
-        const m_lower = (pL1 - pL0) / (t1 - t0);
+        const m_upper = (pU1 - pU0) / (dx);
+        const m_lower = (pL1 - pL0) / (dx);
         
         // Skip if lines are parallel
         if (m_upper === m_lower) continue;
@@ -537,12 +576,15 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
           const avgRangePrior = ((pU0 - pL0) + 0) / 2;
           
           // Accumulate area
+          // console.log(area)
           area += Math.abs(avgRangePrior) * Math.abs(xIntersect - t0);
         }
       }
     }
   }
-  
+  console.log(area)
+  console.log(largestRangePrior)
+  console.log(largestRangePriorThresholdIndex)
   return [area, largestRangePrior, largestRangePriorThresholdIndex];
 }
 
