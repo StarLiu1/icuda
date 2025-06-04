@@ -316,7 +316,7 @@ function priorModifier(priorList) {
       const normalizedShift = ((shift % len) + len) % len;
       return [...arr.slice(-normalizedShift), ...arr.slice(0, -normalizedShift)];
   };
-  console.log(priorArray)
+  // console.log(priorArray)
   const shifted_plus_1 = roll(priorArray, 1);
   const shifted_plus_2 = roll(priorArray, 2);
   const shifted_plus_3 = roll(priorArray, 3);
@@ -496,7 +496,7 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
       const pU1 = pUs[i + 1];
       const t0 = thresholds[i];
       const t1 = thresholds[i + 1];
-      console.log(area)
+      // console.log(area)
       // Skip if thresholds are identical (would cause division by zero)
       if (t0 === t1) continue;
 
@@ -504,15 +504,15 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
         // console.log(t1 - t0)
         dx = 0;
       }else{
-        console.log('not neg inf')
-        console.log(t0 - t1)
+        // console.log('not neg inf')
+        // console.log(t0 - t1)
 
         dx = t0 - t1;
       }
       
       // Case 1: Both endpoints have valid ranges (pL < pU)
       if (pL0 < pU0 && pL1 < pU1) {
-        console.log('here')
+        // console.log('here')
         // Find the range of priors
         const rangePrior = pU0 - pL0;
         
@@ -582,9 +582,9 @@ export function calculateAreaChunk(start, end, pLs, pUs, thresholds) {
       }
     }
   }
-  console.log(area)
-  console.log(largestRangePrior)
-  console.log(largestRangePriorThresholdIndex)
+  // console.log(area)
+  // console.log(largestRangePrior)
+  // console.log(largestRangePriorThresholdIndex)
   return [area, largestRangePrior, largestRangePriorThresholdIndex];
 }
 

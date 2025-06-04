@@ -359,6 +359,7 @@ const Rocupda = () => {
   
   // Show ApAr figure
   const showAparFigure = () => {
+    console.log(isShowingApar);
     setIsShowingApar(!isShowingApar);
     // navigate('/apar');
     calculateApAr(rocData);
@@ -691,10 +692,10 @@ const Rocupda = () => {
       <div className="content-area">
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row', paddingLeft: '50px' }}>
-            {/* Full Size Distribution Plot */}
+            {/* Distribution Plot - Full width when ApAr is hidden */}
             {!isShowingApar && (
-                <div style={{ height: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
-                <div style={{ width: '100%', paddingTop: '25px' }}>
+              <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
+                <div style={{ width: '100%', paddingTop: '25px', marginLeft: '0px' }}>
                   {rocData.fpr.length > 0 && (
                     <DistributionPlot 
                       dataType={dataType}
@@ -707,53 +708,56 @@ const Rocupda = () => {
                       diseaseStd={diseaseStd}
                       healthyMean={healthyMean}
                       healthyStd={healthyStd}
+                      width='95%'
+                      height='45vh'
                     />
                   )}
                 </div>
               </div>
             )}
-            {/* Smaller Size Distribution Plot */}
-            {isShowingApar && (
-                <div style={{ height: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
-                <div style={{ width: '45%', paddingTop: '25px' }}>
-                  {rocData.fpr.length > 0 && (
-                    <DistributionPlot 
-                      dataType={dataType}
-                      predictions={predictions}
-                      trueLabels={trueLabels}
-                      classNames={classNames}
-                      cutoff={cutoff}
-                      optimalCutoff={optimalCutoff}
-                      diseaseMean={diseaseMean}
-                      diseaseStd={diseaseStd}
-                      healthyMean={healthyMean}
-                      healthyStd={healthyStd}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-            {/* // Add this after your existing utility plot div, but before the closing content-area div: */}
-            {isShowingApar && (
-              <div style={{ height: '100%', width: '55%', display: 'flex', flexDirection: 'column', paddingLeft: '15px', paddingTop: '25px' }}>
-                {/* <h3 style={{ textAlign: 'center', margin: '0' }}>Applicability Area (ApAr)</h3> */}
-                {pLs.length > 0 && pUs.length > 0 && (
-                  <AparVisualization 
-                    thresholds={thresholds}
-                    pLs={pLs}
-                    pUs={pUs}
-                    cutoff={cutoff}
-                    optimalPointFpr={optimalPointFpr}
-                    optimalPointTpr={optimalPointTpr}
-                    optimalCutoff={optimalCutoff}
-                    area={area}
-                    tooltipData={tooltipData.apar}
-                    width='40vw'
-                    height='45vh'
-                  />
-                )}
-              </div>
-            )}
+            
+            {/* Distribution Plot - Smaller width when ApAr is shown */}
+            
+              {isShowingApar && (
+                <>
+                  <div style={{ height: '100%', width: '45%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
+                    <div style={{ width: '55%', paddingTop: '25px' }}>
+                      {rocData.fpr.length > 0 && (
+                        <DistributionPlot 
+                          dataType={dataType}
+                          predictions={predictions}
+                          trueLabels={trueLabels}
+                          classNames={classNames}
+                          cutoff={cutoff}
+                          optimalCutoff={optimalCutoff}
+                          diseaseMean={diseaseMean}
+                          diseaseStd={diseaseStd}
+                          healthyMean={healthyMean}
+                          healthyStd={healthyStd}
+                        />
+                      )}
+                    </div>
+                  </div>
+                
+                  <div style={{ height: '100%', width: '55%', display: 'flex', flexDirection: 'column', paddingLeft: '15px', paddingTop: '25px' }}>
+                    {pLs.length > 0 && pUs.length > 0 && (
+                      <AparVisualization 
+                        thresholds={thresholds}
+                        pLs={pLs}
+                        pUs={pUs}
+                        cutoff={cutoff}
+                        optimalPointFpr={optimalPointFpr}
+                        optimalPointTpr={optimalPointTpr}
+                        optimalCutoff={optimalCutoff}
+                        area={area}
+                        tooltipData={tooltipData.apar}
+                        width='40vw'
+                        height='45vh'
+                      />
+                    )}
+                  </div>
+                </>
+              )}
           </div>
           {/* ROC and Utility Plots */}
           <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row', paddingLeft: '50px'}}>

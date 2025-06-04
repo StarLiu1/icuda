@@ -11,7 +11,9 @@ const DistributionPlot = ({
   diseaseMean,
   diseaseStd,
   healthyMean,
-  healthyStd
+  healthyStd,
+  width = '35vw',
+  height = '45vh'
 }) => {
   
   // Generate Distribution Plot data and layout
@@ -62,10 +64,16 @@ const DistributionPlot = ({
           xanchor: 'center'
         },
         xaxis: { title: 'Value' },
-        yaxis: { title: 'Count' },
+        yaxis: { 
+          title: {
+              text: 'Count',
+              standoff: 30  // Increases distance between axis and title
+            }
+        },
         barmode: 'overlay',
         template: 'plotly_white',
-        shapes: shapes
+        shapes: shapes,
+        margin: { l: 60, r: 20, t: 30, b: 0 },
       };
     } else {
       // Simulated data - create normal distributions
@@ -189,9 +197,14 @@ const DistributionPlot = ({
           xanchor: 'center'
         },
         xaxis: { title: 'Value' },
-        yaxis: { title: 'Probability Density' },
+        yaxis: { 
+          title: {
+              text: 'Probability Density',
+              standoff: 30  // Increases distance between axis and title
+            }
+        },
         template: 'plotly_white',
-        margin: { l: 50, r: 20, t: 30, b: 0 },
+        margin: { l: 60, r: 20, t: 30, b: 0 },
         annotations: annotations
       };
     }
@@ -203,7 +216,7 @@ const DistributionPlot = ({
     <Plot
       data={generateDistributionPlot().data}
       layout={generateDistributionPlot().layout}
-      style={{ height: '45vh' , width: '35vw'}}
+      style={{ height: height , width: width}}
     />
   );
 };
