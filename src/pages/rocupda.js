@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from '../components/LoadingOverlay';
 
 import { 
@@ -115,13 +115,21 @@ const Rocupda = () => {
   // Refs
   const fileInputRef = useRef(null);
   
-  // Generate initial simulated data
-  useEffect(() => {
-    if (dataType === 'simulated') {
-      generateData();
-      
-    }
-  }, [dataType, diseaseMean, diseaseStd, healthyMean, healthyStd]);
+  // Calculate optimal cutoff point
+  const calculateOptimalCutoff = useCallback(() => {
+      const {fpr, tpr, thresholds, curvePoints} = rocData;
+    // console.log(curvePoints)
+    const {optimalPtFpr, optimalPtTpr, optimalPointCutoff} = findOptimalPoint(uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds);
+    // const { optimalPoint: newOptimalPoint, trueLabels: newLabels } = 
+    //   calculateCutoffOptimal()
+    // This function is now in RocPlot component
+    // Only triggers the useEffect hook in that component
+    setOptimalPointFpr(optimalPtFpr);
+    setOptimalPointTpr(optimalPtTpr);
+    // console.log(optimalCutoff)
+    setOptimalCutoff(optimalPointCutoff);
+
+  }, [uTP, uFP, uTN, uFN, pD, rocData]);
   
   // Recalculate optimal cutoff when utilities or prevalence changes
   useEffect(() => {
@@ -129,7 +137,7 @@ const Rocupda = () => {
       // calculateOptimalCutoff();
       calculateOptimalCutoff();
     }
-  }, [uTP, uFP, uTN, uFN, pD, rocData]);
+  }, [rocData, calculateOptimalCutoff]);
 
   // Handle loading overlay click
   const handleLoadingClick = () => {
@@ -137,14 +145,22 @@ const Rocupda = () => {
   };
   
   // Function to generate simulated data
-  const generateData = () => {
+  const generateData = useCallback(() => {
     const { predictions: newPredictions, trueLabels: newLabels } = 
       generateSimulatedData(diseaseMean, diseaseStd, healthyMean, healthyStd);
     
     setPredictions(newPredictions);
     setTrueLabels(newLabels);
     calculateRoc(newPredictions, newLabels);
-  };
+  }, [diseaseMean, diseaseStd, healthyMean, healthyStd]);
+
+  // Generate initial simulated data
+  useEffect(() => {
+    if (dataType === 'simulated') {
+      generateData();
+      
+    }
+  }, [dataType, generateData]);
   
   // Function to calculate ROC curve
   const calculateRoc = (preds, labels) => {
@@ -212,21 +228,7 @@ const Rocupda = () => {
     return closestIndex;
   };
   
-  // Calculate optimal cutoff point
-  const calculateOptimalCutoff = () => {
-    const {fpr, tpr, thresholds, curvePoints} = rocData;
-    // console.log(curvePoints)
-    const {optimalPtFpr, optimalPtTpr, optimalPointCutoff} = findOptimalPoint(uTN, uFN, uTP, uFP, pD, curvePoints, fpr, tpr, thresholds);
-    // const { optimalPoint: newOptimalPoint, trueLabels: newLabels } = 
-    //   calculateCutoffOptimal()
-    // This function is now in RocPlot component
-    // Only triggers the useEffect hook in that component
-    setOptimalPointFpr(optimalPtFpr);
-    setOptimalPointTpr(optimalPtTpr);
-    // console.log(optimalCutoff)
-    setOptimalCutoff(optimalPointCutoff);
-
-  };
+  
   
   // Handle cutoff slider change
   const handleCutoffChange = (newCutoff) => {
@@ -339,10 +341,10 @@ const Rocupda = () => {
   const toggleDrawMode = () => {
     if (drawMode === 'point') {
       setDrawMode('line');
-      setShapes([]);
+      // setShapes([]);
     } else {
       setDrawMode('point');
-      setShapes([]);
+      // setShapes([]);
       setPartialAUC("Toggle line mode and select region for partial AUC.");
     }
   };

@@ -7,7 +7,7 @@ const LoadingOverlay = ({ text, onHide }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onHide();
-    }, 5000);
+    }, 3000);
     
     return () => clearTimeout(timer);
   }, [onHide]);

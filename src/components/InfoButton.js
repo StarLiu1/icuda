@@ -1,17 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-const InfoButton = ({ tooltipId, tooltipText, linkText, linkUrl, top, left, width }) => {
+const InfoButton = ({ tooltipId, tooltipText, linkText, linkUrl, top, left, width}) => {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+  const tooltipRef = useRef(null);
+  const timeoutRef = useRef(null);
   
-  const toggleTooltip = () => {
-    setIsTooltipVisible(!isTooltipVisible);
+  const showTooltip = () => {
+    setIsTooltipVisible(true);
+    
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    // Set timeout to hide tooltip after 5 seconds
+    timeoutRef.current = setTimeout(() => {
+      setIsTooltipVisible(false);
+    }, 3000);
   };
   
+  const hideTooltip = () => {
+    setIsTooltipVisible(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+
+  // Handle click outside to hide tooltip
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
+        hideTooltip();
+      }
+    };
+
+    if (isTooltipVisible) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isTooltipVisible]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }} ref={tooltipRef}>
       {/* The question mark button */}
       <span 
-        onClick={toggleTooltip}
+        onMouseEnter={showTooltip}
         style={{
           backgroundColor: "#478ECC",
           color: "white",

@@ -168,7 +168,7 @@ const UtilityPlot = ({
       <Plot
         data={generateUtilityPlot().data}
         layout={generateUtilityPlot().layout}
-        style={{ height: '47vh', width: '40vw' }}
+        style={{ height: '45vh', width: '40vw' }}
       />
       
       <div style={{ display: 'flex', alignItems: 'center', height: '5%', paddingTop: '1.75%' }}>
@@ -178,7 +178,7 @@ const UtilityPlot = ({
           tooltipText={tooltipData.utility.tooltip_text}
           linkText={tooltipData.utility.link_text}
           linkUrl={tooltipData.utility.link_url}
-          top="-105px"
+          top="-235px"
           left="0%"
           width="200px"
         />
