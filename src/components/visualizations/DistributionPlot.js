@@ -73,7 +73,7 @@ const DistributionPlot = ({
         barmode: 'overlay',
         template: 'plotly_white',
         shapes: shapes,
-        margin: { l: 60, r: 20, t: 30, b: 0 },
+        margin: { l: 60, r: 20, t: 30, b: 20 },
       };
     } else {
       // Simulated data - create normal distributions
@@ -196,7 +196,13 @@ const DistributionPlot = ({
           x: 0.5,
           xanchor: 'center'
         },
-        xaxis: { title: 'Value' },
+        // xaxis: { title: 'Value' },
+        xaxis: { 
+          title: {
+              text: '',
+              standoff: -30  // Increases distance between axis and title
+            }
+        },
         yaxis: { 
           title: {
               text: 'Probability Density',
@@ -204,7 +210,7 @@ const DistributionPlot = ({
             }
         },
         template: 'plotly_white',
-        margin: { l: 60, r: 20, t: 30, b: 0 },
+        margin: { l: 60, r: 20, t: 30, b: 20 },
         annotations: annotations
       };
     }

@@ -452,14 +452,14 @@ const Rocupda = () => {
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-inner">
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', paddingTop: '60px' }}>
+          <div style={{ width: '95%', display: 'flex', flexDirection: 'column', paddingTop: '15px' }}>
             <select 
               value={dataType}
               onChange={handleDataTypeChange}
               style={{ marginBottom: '20px', padding: '8px' }}
             >
-              <option value="simulated">Simulated Binormal Model</option>
-              <option value="imported">Imported Data</option>
+              <option value="simulated">Simulate Binormal Model</option>
+              <option value="imported">Import Data</option>
             </select>
             
             {showClassNameInputs && (
@@ -515,15 +515,15 @@ const Rocupda = () => {
             ) : (
               <div style={{ 
                 width: '98.5%',
-                height: '58px',
-                lineHeight: '60px',
+                height: '40px',
+                lineHeight: '40px',
                 borderWidth: '1px',
                 borderStyle: 'dashed',
                 borderRadius: '5px',
                 textAlign: 'center',
-                marginBottom: '20px'
+                marginBottom: '10px'
               }}>
-                To upload data, select "Import Data" from dropdown
+                To import data, select from dropdown
               </div>
             )}
             
@@ -675,7 +675,7 @@ const Rocupda = () => {
             <button
               onClick={showAparFigure}
               style={{
-                width: '100%',
+                width: '98.5%',
                 marginTop: '15px',
                 marginBottom: '10px'
               }}
@@ -684,7 +684,7 @@ const Rocupda = () => {
             </button>
             
             <div style={{ marginTop: 0, marginBottom: 5 }}>
-              Dashboard as of: 04/26/25
+              Dashboard as of: 06/04/25
             </div>
           </div>
         </div>
@@ -693,7 +693,7 @@ const Rocupda = () => {
       {/* Content Area */}
       <div className="content-area">
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-          <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row', paddingLeft: '50px' }}>
+          <div style={{ width: '100%', height: '50%', display: 'flex', flexDirection: 'row', paddingLeft: '50px', paddingBottom: '10px'}}>
             {/* Distribution Plot - Full width when ApAr is hidden */}
             {!isShowingApar && (
               <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'row', marginTop: '0px' }}>
@@ -787,6 +787,8 @@ const Rocupda = () => {
                     uTN={uTN}
                     uFN={uFN}
                     pD={pD}
+                    width='35vw'
+                    height='43vh'
                   />
                 )}
               </div>
@@ -806,6 +808,8 @@ const Rocupda = () => {
                     uFP={uFP}
                     uTN={uTN}
                     uFN={uFN}
+                    height = '43vh'
+                    width = '40vw' 
                   />
                 )}
               </div>

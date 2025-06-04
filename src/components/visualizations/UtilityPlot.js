@@ -21,7 +21,9 @@ const UtilityPlot = ({
   uTP, 
   uFP, 
   uTN, 
-  uFN 
+  uFN,
+  height = '44vh', 
+  width = '40vw' 
 }) => {
   
   // Generate Utility Plot data and layout
@@ -125,7 +127,7 @@ const UtilityPlot = ({
       xaxis: { title: 'Probability of Disease (p)' },
       yaxis: { title: 'Expected Utility' },
       template: 'plotly_white',
-      margin: { l: 50, r: 20, t: 30, b: 70 },
+      margin: { l: 50, r: 20, t: 30, b: 30 },
       annotations: [
         {
           x: pL,
@@ -168,17 +170,18 @@ const UtilityPlot = ({
       <Plot
         data={generateUtilityPlot().data}
         layout={generateUtilityPlot().layout}
-        style={{ height: '45vh', width: '40vw' }}
+        style={{ height: height, width: width }}
       />
       
-      <div style={{ display: 'flex', alignItems: 'center', height: '5%', paddingTop: '1.75%' }}>
-        <div style={{ width: '80%' }}></div>
+      <div style={{ display: 'flex', alignItems: 'center', height: '5%', margin: 0}}>
+        <div style={{ width: '70%', paddingBottom: '10', display: 'hidden', height: '45px'}}></div>
+        
         <InfoButton
           tooltipId="utility"
           tooltipText={tooltipData.utility.tooltip_text}
           linkText={tooltipData.utility.link_text}
           linkUrl={tooltipData.utility.link_url}
-          top="-235px"
+          top="-215px"
           left="0%"
           width="200px"
         />

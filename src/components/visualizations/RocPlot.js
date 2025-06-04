@@ -31,7 +31,9 @@ const RocPlot = ({
   uFP,
   uTN,
   uFN,
-  pD
+  pD,
+  width = '35vw',
+  height = '43vh'
 }) => {
   
   // Handle plot click
@@ -300,7 +302,7 @@ const RocPlot = ({
         data={generateRocPlot().data}
         layout={generateRocPlot().layout}
         onClick={handleRocPlotClick}
-        style={{ height: '42vh', width: '35vw' }}
+        style={{ height: height, width: width }}
       />
       
       <div style={{ display: 'flex', alignItems: 'center', height: '5%', margin: 0 }}>

@@ -25,7 +25,7 @@ const tooltipData = {
   apar: {
     tooltip_text: "Applicability Area (ApAr) represents the range of disease prevalence values where using the test is optimal.",
     link_text: "Learn more about ApAr",
-    link_url: "#"
+    link_url: "https://pubmed.ncbi.nlm.nih.gov/38222359/"
   }
 };
 
