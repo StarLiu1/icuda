@@ -62,7 +62,7 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    padding-left: 10px;
+    padding-left: 0px;
   }
   
   .slider-container {

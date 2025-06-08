@@ -452,7 +452,7 @@ const Rocupda = () => {
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-inner">
-          <div style={{ width: '95%', display: 'flex', flexDirection: 'column', paddingTop: '15px' }}>
+          <div style={{ width: '98.5%', display: 'flex', flexDirection: 'column', paddingTop: '15px' }}>
             <select 
               value={dataType}
               onChange={handleDataTypeChange}
@@ -538,7 +538,7 @@ const Rocupda = () => {
                     step={0.01}
                     value={diseaseMean}
                     onChange={(e) => setDiseaseMean(parseFloat(e.target.value))}
-                    style={{ width: '100%' }}
+                    style={{ width: '98.5%' }}
                   />
                 </div>
                 
@@ -551,7 +551,7 @@ const Rocupda = () => {
                     step={0.01}
                     value={diseaseStd}
                     onChange={(e) => setDiseaseStd(parseFloat(e.target.value))}
-                    style={{ width: '100%' }}
+                    style={{ width: '98.5%' }}
                   />
                 </div>
                 
@@ -564,7 +564,7 @@ const Rocupda = () => {
                     step={0.01}
                     value={healthyMean}
                     onChange={(e) => setHealthyMean(parseFloat(e.target.value))}
-                    style={{ width: '100%' }}
+                    style={{ width: '98.5%' }}
                   />
                 </div>
                 
@@ -577,7 +577,7 @@ const Rocupda = () => {
                     step={0.01}
                     value={healthyStd}
                     onChange={(e) => setHealthyStd(parseFloat(e.target.value))}
-                    style={{ width: '100%' }}
+                    style={{ width: '98.5%' }}
                   />
                 </div>
               </>
@@ -592,7 +592,7 @@ const Rocupda = () => {
                 step={getCutoffRange().step}
                 value={cutoff}
                 onChange={(e) => handleCutoffChange(parseFloat(e.target.value))}
-                style={{ width: '100%' }}
+                style={{ width: '98.5%' }}
               />
             </div>
             
@@ -605,7 +605,7 @@ const Rocupda = () => {
                 step={0.01}
                 value={uTP}
                 onChange={(e) => setUTP(parseFloat(e.target.value))}
-                style={{ width: '100%' }}
+                style={{ width: '98.5%' }}
               />
             </div>
             
@@ -618,7 +618,7 @@ const Rocupda = () => {
                 step={0.01}
                 value={uFP}
                 onChange={(e) => setUFP(parseFloat(e.target.value))}
-                style={{ width: '100%' }}
+                style={{ width: '98.5%' }}
               />
             </div>
             
@@ -631,7 +631,7 @@ const Rocupda = () => {
                 step={0.01}
                 value={uTN}
                 onChange={(e) => setUTN(parseFloat(e.target.value))}
-                style={{ width: '100%' }}
+                style={{ width: '98.5%' }}
               />
             </div>
             
@@ -644,7 +644,7 @@ const Rocupda = () => {
                 step={0.01}
                 value={uFN}
                 onChange={(e) => setUFN(parseFloat(e.target.value))}
-                style={{ width: '100%' }}
+                style={{ width: '98.5%' }}
               />
             </div>
             
@@ -657,7 +657,7 @@ const Rocupda = () => {
                 step={0.01}
                 value={pD}
                 onChange={(e) => setPD(parseFloat(e.target.value))}
-                style={{ width: '100%' }}
+                style={{ width: '98.5%' }}
               />
             </div>
             
@@ -675,7 +675,7 @@ const Rocupda = () => {
             <button
               onClick={showAparFigure}
               style={{
-                width: '98.5%',
+                width: '97.5%',
                 marginTop: '15px',
                 marginBottom: '10px'
               }}
@@ -684,7 +684,7 @@ const Rocupda = () => {
             </button>
             
             <div style={{ marginTop: 0, marginBottom: 5 }}>
-              Dashboard as of: 06/04/25
+              Dashboard as of: 06/08/25
             </div>
           </div>
         </div>
