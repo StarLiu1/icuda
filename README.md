@@ -17,13 +17,11 @@ The main dashboard provides a typical machine learning evaluation interface with
 
 The default mode is designed for **educational demonstrations**, while the 'Imported Data' mode is suitable for **decision-analytic evaluations of real-world ML model performance** (currently limited to binary classification problems).
 
-For a complete assessment of model performance and applicability, we recommend using the main dashboard alongside the Applicability Area (ApAr) dashboard.
+For a complete assessment of model performance and applicability, we recommend adding the ApAr figure (bottom left button 'Show ApAr Figure').
 
 ## Applicability Area (ApAr) Dashboard
 
-The [Applicability Area (ApAr)](https://pubmed.ncbi.nlm.nih.gov/38222359/) dashboard uses a decision-analytic and utility-based approach to evaluate clinical predictive models. It communicates the **range of prior probabilities** and **test cutoffs** where the model has **positive utility**, meaning it is useful.
-
-> Please note: *Loading times may vary between 5 to 30 seconds.*
+The [Applicability Area (ApAr)](https://pubmed.ncbi.nlm.nih.gov/38222359/) figure/dashboard uses a decision-analytic and utility-based approach to evaluate clinical predictive models. It communicates the **range of prior probabilities** and **test cutoffs** where the model has **positive utility**, meaning it is useful.
 
 ## Info Buttons
 
