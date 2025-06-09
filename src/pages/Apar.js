@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import LoadingOverlay from '../components/LoadingOverlay';
-import AparVisualization from '../components/AparVisualization';
+import AparPlot from '../components/visualizations/AparPlot';
 import AparControls from '../components/AparControls';
 
 // Import utility functions
@@ -19,6 +19,7 @@ import {
   findOptimalPointApar,
   // extractFprTprFromCurvePoints
 } from '../utils/rocUtils';
+
 
 // Mock tooltip data (you can replace with your actual data)
 const tooltipData = {
@@ -484,7 +485,7 @@ const ApAr = () => {
       {/* Main visualization area */}
       <div style={{ width: '70%', display: 'flex', flexDirection: 'column', marginTop: '45px' }}>
         {!loading && pLs.length > 0 && pUs.length > 0 && (
-          <AparVisualization 
+          <AparPlot 
             thresholds={thresholds}
             pLs={pLs}
             pUs={pUs}

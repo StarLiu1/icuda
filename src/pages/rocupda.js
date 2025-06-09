@@ -17,8 +17,11 @@ import {
 } from '../utils/aparUtils';
 
 // Import visualization components
-import { RocPlot, UtilityPlot, DistributionPlot } from '../components/visualizations';
-import AparVisualization from '../components/AparVisualization';
+import { RocPlot, UtilityPlot, DistributionPlot, AparPlot } from '../components/visualizations';
+
+// Report generator
+import ReportGenerator from '../components/ReportGenerator';
+import { generatePDFReport, prepareReportData } from '../utils/reportUtils';
 
 // Add tooltip data
 const tooltipData = {
@@ -349,14 +352,81 @@ const Rocupda = () => {
     }
   };
   
-  // Generate report (simplified, would normally include PDF generation)
-  const generateReport = () => {
-    alert('Report generation would download a PDF with all plots and analysis.');
+  const generateReport = async () => {
+    try {
+      const dashboardState = {
+        rocData,
+        tprValue,
+        fprValue,
+        optimalPointTpr,
+        optimalPointFpr,
+        optimalCutoff,
+        cutoff,
+        uTP,
+        uFP,
+        uTN,
+        uFN,
+        pD,
+        diseaseMean,
+        diseaseStd,
+        healthyMean,
+        healthyStd,
+        classNames,
+        dataType
+      };
+  
+      const reportConfig = prepareReportData(dashboardState);
+      const result = await generatePDFReport(reportConfig);
+      
+      if (result.success) {
+        alert('Report generated successfully!');
+      } else {
+        alert('Error: ' + result.message);
+      }
+    } catch (error) {
+      alert('Error generating report: ' + error.message);
+    }
   };
   
-  // Generate report with ApAr
-  const generateReportWithApar = () => {
-    alert('Report generation with ApAr would download a PDF with all plots, ApAr analysis, and data.');
+  const generateReportWithApar = async () => {
+    try {
+      const dashboardState = {
+        rocData,
+        tprValue,
+        fprValue,
+        optimalPointTpr,
+        optimalPointFpr,
+        optimalCutoff,
+        cutoff,
+        uTP,
+        uFP,
+        uTN,
+        uFN,
+        pD,
+        diseaseMean,
+        diseaseStd,
+        healthyMean,
+        healthyStd,
+        classNames,
+        dataType,
+        // Include ApAr data
+        area,
+        thresholds,
+        pLs,
+        pUs
+      };
+  
+      const reportConfig = prepareReportData(dashboardState);
+      const result = await generatePDFReport(reportConfig);
+      
+      if (result.success) {
+        alert('Report with ApAr generated successfully!');
+      } else {
+        alert('Error: ' + result.message);
+      }
+    } catch (error) {
+      alert('Error generating ApAr report: ' + error.message);
+    }
   };
   
   // Show ApAr figure
@@ -663,14 +733,33 @@ const Rocupda = () => {
             
             <h4>{formatDisplayText.optimalCutoffText()}</h4>
             
-            <div className="reports-container">
-              <button onClick={generateReport}>
-                Generate Report
-              </button>
-              <button onClick={generateReportWithApar}>
-                Generate Report with ApAr
-              </button>
-            </div>
+            {/* // Add this instead: */}
+            <ReportGenerator
+              rocData={rocData}
+              tprValue={tprValue}
+              fprValue={fprValue}
+              optimalPointTpr={optimalPointTpr}
+              optimalPointFpr={optimalPointFpr}
+              optimalCutoff={optimalCutoff}
+              cutoff={cutoff}
+              uTP={uTP}
+              uFP={uFP}
+              uTN={uTN}
+              uFN={uFN}
+              pD={pD}
+              diseaseMean={diseaseMean}
+              diseaseStd={diseaseStd}
+              healthyMean={healthyMean}
+              healthyStd={healthyStd}
+              classNames={classNames}
+              dataType={dataType}
+              area={area}
+              thresholds={thresholds}
+              pLs={pLs}
+              pUs={pUs}
+              predictions={predictions}
+              trueLabels={trueLabels}
+            />
             
             <button
               onClick={showAparFigure}
@@ -712,6 +801,7 @@ const Rocupda = () => {
                       healthyStd={healthyStd}
                       width='95%'
                       height='45vh'
+                      xRange='8'
                     />
                   )}
                 </div>
@@ -736,6 +826,7 @@ const Rocupda = () => {
                           diseaseStd={diseaseStd}
                           healthyMean={healthyMean}
                           healthyStd={healthyStd}
+                          xRange='5'
                         />
                       )}
                     </div>
@@ -743,7 +834,7 @@ const Rocupda = () => {
                 
                   <div style={{ height: '100%', width: '55%', display: 'flex', flexDirection: 'column', paddingLeft: '15px', paddingTop: '25px' }}>
                     {pLs.length > 0 && pUs.length > 0 && (
-                      <AparVisualization 
+                      <AparPlot 
                         thresholds={thresholds}
                         pLs={pLs}
                         pUs={pUs}

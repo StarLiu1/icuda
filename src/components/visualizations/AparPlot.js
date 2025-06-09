@@ -1,6 +1,6 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import InfoButton from './InfoButton';
+import InfoButton from '../InfoButton';
 
 /**
  * Component to display the ApAr visualization
@@ -13,7 +13,7 @@ import InfoButton from './InfoButton';
  * @param {Object} props.tooltipData - Tooltip information for the info button
  * @returns {JSX.Element}
  */
-const AparVisualization = ({ 
+const AparPlot = ({ 
   thresholds, 
   pLs, 
   pUs, 
@@ -136,11 +136,13 @@ const AparVisualization = ({
 
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-      <Plot
-        data={generateAparPlot().data}
-        layout={generateAparPlot().layout}
-        style={{ height: height, width: width}}
-      />
+      <div id="apar-plot">
+        <Plot
+          data={generateAparPlot().data}
+          layout={generateAparPlot().layout}
+          style={{ height: height, width: width}}
+        />
+      </div>
       
       {/* Info button */}
       <div 
@@ -169,4 +171,4 @@ const AparVisualization = ({
   );
 };
 
-export default AparVisualization;
+export default AparPlot;

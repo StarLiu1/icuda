@@ -298,12 +298,14 @@ const RocPlot = ({
   
   return (
     <div>
-      <Plot
-        data={generateRocPlot().data}
-        layout={generateRocPlot().layout}
-        onClick={handleRocPlotClick}
-        style={{ height: height, width: width }}
-      />
+      <div id="roc-plot">
+        <Plot
+          data={generateRocPlot().data}
+          layout={generateRocPlot().layout}
+          onClick={handleRocPlotClick}
+          style={{ height: height, width: width }}
+        />
+      </div>
       
       <div style={{ display: 'flex', alignItems: 'center', height: '5%', margin: 0 }}>
         {/* <div style={{ width: '5%' }}></div> */}

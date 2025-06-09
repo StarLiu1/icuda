@@ -167,11 +167,13 @@ const UtilityPlot = ({
 
   return (
     <div>
-      <Plot
-        data={generateUtilityPlot().data}
-        layout={generateUtilityPlot().layout}
-        style={{ height: height, width: width }}
-      />
+      <div id="utility-plot">
+        <Plot
+          data={generateUtilityPlot().data}
+          layout={generateUtilityPlot().layout}
+          style={{ height: height, width: width }}
+        />
+      </div>
       
       <div style={{ display: 'flex', alignItems: 'center', height: '5%', margin: 0}}>
         <div style={{ width: '70%', paddingBottom: '10', display: 'hidden', height: '45px'}}></div>

@@ -13,7 +13,8 @@ const DistributionPlot = ({
   healthyMean,
   healthyStd,
   width = '35vw',
-  height = '45vh'
+  height = '45vh',
+  xRange = 8
 }) => {
   
   // Generate Distribution Plot data and layout
@@ -77,7 +78,7 @@ const DistributionPlot = ({
       };
     } else {
       // Simulated data - create normal distributions
-      const xValues = Array.from({ length: 1000 }, (_, i) => -10 + i * 0.02);
+      const xValues = Array.from({ length: 1000 }, (_, i) => -xRange + i * (2 * xRange) / 1000);
       
       // Calculate PDF values
       const diseasedPdf = xValues.map(x => 
@@ -219,11 +220,13 @@ const DistributionPlot = ({
   };
 
   return (
-    <Plot
-      data={generateDistributionPlot().data}
-      layout={generateDistributionPlot().layout}
-      style={{ height: height , width: width}}
-    />
+    <div id="distribution-plot">
+      <Plot
+        data={generateDistributionPlot().data}
+        layout={generateDistributionPlot().layout}
+        style={{ height: height, width: width}}
+      />
+    </div>
   );
 };
 

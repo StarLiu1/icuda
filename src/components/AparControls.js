@@ -1,4 +1,5 @@
 import React from 'react';
+import ReportGenerator from '../components/ReportGenerator';
 
 /**
  * Component for ApAr control panel
@@ -224,6 +225,33 @@ const AparControls = ({
         
         <h4 style={{ marginTop: 5 }}>{optimalCutoffText}</h4>
       </div>
+      <ReportGenerator
+        rocData={rocData}
+        tprValue={tprValue}
+        fprValue={fprValue}
+        optimalPointTpr={optimalPointFpr}
+        optimalPointFpr={optimalPointTpr}
+        optimalCutoff={optimalCutoff}
+        cutoff={cutoff}
+        uTP={uTP}
+        uFP={uFP}
+        uTN={uTN}
+        uFN={uFN}
+        pD={pD}
+        diseaseMean={diseaseMean}
+        diseaseStd={diseaseStd}
+        healthyMean={healthyMean}
+        healthyStd={healthyStd}
+        classNames={classNames}
+        dataType={dataType}
+        area={area}
+        thresholds={thresholds}
+        pLs={pLs}
+        pUs={pUs}
+        predictions={predictions}
+        trueLabels={trueLabels}
+        style={{ marginTop: '15px' }}
+      />
     </div>
   );
 };
