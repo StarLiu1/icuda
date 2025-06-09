@@ -73,7 +73,7 @@ const AppBar = () => {
             Read Me
           </Link>
           
-          <a href="https://github.com/StarLiu1/da-dashapp" target="_blank" rel="noopener noreferrer" className="tab-link" style={{
+          <a href="https://github.com/StarLiu1/icuda" target="_blank" rel="noopener noreferrer" className="tab-link" style={{
             fontSize: "20px",
             fontWeight: "bold",
             color: "white",
