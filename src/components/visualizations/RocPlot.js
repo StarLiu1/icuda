@@ -169,8 +169,8 @@ const RocPlot = ({
     const data = [
       // ROC Curve (empirical points)
       {
-        x: fpr,
-        y: tpr,
+        x: fpr.map(val => parseFloat(val.toFixed(3))),
+        y: tpr.map(val => parseFloat(val.toFixed(3))),
         mode: 'lines',
         name: 'ROC Curve',
         line: { color: 'blue' }
@@ -181,8 +181,8 @@ const RocPlot = ({
     if (curvePoints && curvePoints.curvePointsGen && Array.isArray(curvePoints.curvePointsGen)) {
       const bezierPoints = curvePoints.curvePointsGen;
       data.push({
-        x: bezierPoints.map(p => p[0]),
-        y: bezierPoints.map(p => p[1]),
+        x: bezierPoints.map(p => p[0].toFixed(3)),
+        y: bezierPoints.map(p => p[1].toFixed(3)),
         mode: 'lines',
         name: 'Bezier Curve',
         line: { color: 'blue' }
@@ -191,8 +191,8 @@ const RocPlot = ({
     
     // Selected Cutoff Point
     data.push({
-      x: [fprValue],
-      y: [tprValue],
+      x: [fprValue.toFixed(3)],
+      y: [tprValue.toFixed(3)],
       mode: 'markers',
       name: 'Selected Cutoff Point',
       marker: { color: 'blue', size: 10 }
@@ -202,8 +202,8 @@ const RocPlot = ({
     // const optimalFprIndex = rocData.thresholds.findIndex(t => Math.abs(t - optimalCutoff) < 0.001);
     // if (optimalFprIndex >= 0) {
     data.push({
-      x: [optimalPointFpr || 0],
-      y: [optimalPointTpr|| 0],
+      x: [optimalPointFpr.toFixed(3) || 0],
+      y: [optimalPointTpr.toFixed(3)|| 0],
       mode: 'markers',
       name: 'Optimal Cutoff Point',
       marker: { color: 'red', size: 10 }
@@ -324,7 +324,7 @@ const RocPlot = ({
           tooltipText={tooltipData.roc.tooltip_text}
           linkText={tooltipData.roc.link_text}
           linkUrl={tooltipData.roc.link_url}
-          top="-215px"
+          top="-150px"
           left="0%"
           width="200px"
         />

@@ -112,12 +112,7 @@ const ApAr = () => {
     return () => clearTimeout(timer);
   }, [dataType, diseaseMean, diseaseStd, healthyMean, healthyStd, uTP, uFP, uTN, uFN, pD]);
 
-  useEffect(() => {
-      if (rocData.fpr.length > 0) {
-        // calculateOptimalCutoff();
-        calculateOptimalCutoff();
-      }
-    }, [uTP, uFP, uTN, uFN, pD, rocData]);
+
 
   const generateData = () => {
       const { predictions: newPredictions, trueLabels: newLabels } = 
@@ -128,6 +123,13 @@ const ApAr = () => {
       calculateRoc(newPredictions, newLabels);
       // calculateOptimalCutoff();
     };
+
+  useEffect(() => {
+    if (rocData.fpr.length > 0) {
+      // calculateOptimalCutoff();
+      calculateOptimalCutoff();
+    }
+  }, [uTP, uFP, uTN, uFN, pD, rocData]);
 
   const calculateOptimalCutoff = () => {
       const {fpr, tpr, thresholds, curvePoints} = rocData;
@@ -452,12 +454,14 @@ const ApAr = () => {
       )}
       
       {/* Left sidebar with controls */}
-      <div style={{ width: '30%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '20%', display: 'flex', flexDirection: 'column' }}>
         <AparControls 
           dataType={dataType}
           onDataTypeChange={handleDataTypeChange}
           onFileUpload={handleFileUpload}
           cutoff={cutoff}
+          cutoffMin={dataType === 'simulated' ? -5 : 0}
+          cutoffMax={dataType === 'simulated' ? 5 : 1}
           onCutoffChange={(e) => handleCutoffChange(parseFloat(e.target.value))}
           uTP={uTP}
           onUTPChange={handleUTPChange}

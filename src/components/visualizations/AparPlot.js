@@ -162,7 +162,7 @@ const AparPlot = ({
           tooltipText={tooltipData.tooltip_text}
           linkText={tooltipData.link_text}
           linkUrl={tooltipData.link_url}
-          top="-205px"
+          top="-150px"
           left="50%"
           width="200px"
         />

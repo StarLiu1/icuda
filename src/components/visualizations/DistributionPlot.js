@@ -97,8 +97,8 @@ const DistributionPlot = ({
       data = [
         // Diseased distribution
         {
-          x: xValues,
-          y: diseasedPdf,
+          x: xValues.map(val => parseFloat(val.toFixed(3))),
+          y: diseasedPdf.map(val => parseFloat(val.toFixed(3))),
           mode: 'lines',
           name: classNames.positive,
           line: { color: 'red' },
@@ -106,8 +106,8 @@ const DistributionPlot = ({
         },
         // Healthy distribution
         {
-          x: xValues,
-          y: healthyPdf,
+          x: xValues.map(val => parseFloat(val.toFixed(3))),
+          y: healthyPdf.map(val => parseFloat(val.toFixed(3))),
           mode: 'lines',
           name: classNames.negative,
           line: { color: 'blue' },
@@ -123,8 +123,8 @@ const DistributionPlot = ({
       );
       
       data.push({
-        x: fnX,
-        y: fnY,
+        x: fnX.map(val => parseFloat(val.toFixed(3))),
+        y: fnY.map(val => parseFloat(val.toFixed(3))),
         mode: 'none',
         name: 'False Negative',
         fill: 'tozeroy',
@@ -140,8 +140,8 @@ const DistributionPlot = ({
       );
       
       data.push({
-        x: fpX,
-        y: fpY,
+        x: fpX.map(val => parseFloat(val.toFixed(3))),
+        y: fpY.map(val => parseFloat(val.toFixed(3))),
         mode: 'none',
         name: 'False Positive',
         fill: 'tozeroy',
@@ -151,8 +151,8 @@ const DistributionPlot = ({
       
       // Add selected cutoff line
       data.push({
-        x: Array(25).fill(cutoff),
-        y: Array.from({ length: 25 }, (_, i) => i * (maxPdf * 1.1) / 24),
+        x: Array(25).fill(cutoff).map(val => parseFloat(val.toFixed(3))),
+        y: Array.from({ length: 25 }, (_, i) => i * (maxPdf * 1.1) / 24).map(val => parseFloat(val.toFixed(3))),
         mode: 'markers',
         name: 'Selected Cutoff',
         marker: { color: 'blue', size: 6 }
@@ -160,8 +160,8 @@ const DistributionPlot = ({
       
       // Add optimal cutoff line
       data.push({
-        x: Array(25).fill(optimalCutoff),
-        y: Array.from({ length: 25 }, (_, i) => i * (maxPdf * 1.1) / 24),
+        x: Array(25).fill(optimalCutoff).map(val => parseFloat(val.toFixed(3))),
+        y: Array.from({ length: 25 }, (_, i) => i * (maxPdf * 1.1) / 24).map(val => parseFloat(val.toFixed(3))),
         mode: 'markers',
         name: 'Optimal Cutoff',
         marker: { color: 'red', size: 6 }

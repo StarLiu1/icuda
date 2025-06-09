@@ -62,39 +62,39 @@ const UtilityPlot = ({
     const data = [
       // Treat All line
       {
-        x: p_values,
-        y: treatAllLine,
+        x: p_values.map(val => parseFloat(val.toFixed(3))),
+        y: treatAllLine.map(val => parseFloat(val.toFixed(3))),
         mode: 'lines',
         name: 'Treat All',
         line: { color: 'green' }
       },
       // Treat None line
       {
-        x: p_values,
-        y: treatNoneLine,
+        x: p_values.map(val => parseFloat(val.toFixed(3))),
+        y: treatNoneLine.map(val => parseFloat(val.toFixed(3))),
         mode: 'lines',
         name: 'Treat None',
         line: { color: 'orange' }
       },
       // Test line with selected cutoff
       {
-        x: p_values,
-        y: testLine,
+        x: p_values.map(val => parseFloat(val.toFixed(3))),
+        y: testLine.map(val => parseFloat(val.toFixed(3))),
         mode: 'lines',
         name: 'Test (Selected)',
         line: { color: 'blue' }
       },
       // Test line with optimal cutoff
       {
-        x: p_values.filter((_, i) => i % 2 === 0),
-        y: optimalTestLine.filter((_, i) => i % 2 === 0),
+        x: p_values.filter((_, i) => i % 2 === 0).map(val => parseFloat(val.toFixed(3))),
+        y: optimalTestLine.filter((_, i) => i % 2 === 0).map(val => parseFloat(val.toFixed(3))),
         mode: 'markers',
         name: 'Optimal Cutoff',
         marker: { color: 'red' }
       },
       // pL line
       {
-        x: [pL, pL],
+        x: [pL.toFixed(3), pL.toFixed(3)],
         y: [0, 1],
         mode: 'lines',
         line: { color: 'orange', width: 2, dash: 'dash' },
@@ -102,7 +102,7 @@ const UtilityPlot = ({
       },
       // pStar line
       {
-        x: [pStar, pStar],
+        x: [pStar.toFixed(3), pStar.toFixed(3)],
         y: [0, 1],
         mode: 'lines',
         line: { color: 'black', width: 2, dash: 'dash' },
@@ -110,7 +110,7 @@ const UtilityPlot = ({
       },
       // pU line
       {
-        x: [pU, pU],
+        x: [pU.toFixed(3), pU.toFixed(3)],
         y: [0, 1],
         mode: 'lines',
         line: { color: 'green', width: 2, dash: 'dash' },
@@ -183,7 +183,7 @@ const UtilityPlot = ({
           tooltipText={tooltipData.utility.tooltip_text}
           linkText={tooltipData.utility.link_text}
           linkUrl={tooltipData.utility.link_url}
-          top="-215px"
+          top="-130px"
           left="0%"
           width="200px"
         />

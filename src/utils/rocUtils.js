@@ -196,28 +196,48 @@ export const calculatePartialAUC = (fpr, tpr, minFpr, maxFpr, minTpr) => {
   const filteredTpr = indices.map(i => tpr[i]);
   
   // Filter to only include points where TPR >= minTpr
-  const validIndices = filteredTpr.map((value, index) => ({ value, index }))
-                               .filter(item => item.value >= minTpr)
-                               .map(item => item.index);
+  const validIndices = fpr.map((value, index) => ({ fpr: value, tpr: tpr[index], index }))
+                        .filter(item => item.fpr >= minFpr && item.fpr <= maxFpr && item.tpr >= minTpr)
+                        .map(item => item.index);
   
   if (validIndices.length === 0) return 0;
   
   const regionFpr = validIndices.map(i => filteredFpr[i]);
   const regionTpr = validIndices.map(i => filteredTpr[i]);
   
-  // Calculate the rectangle area
-  const rectArea = (Math.max(...filteredFpr)) * (1 - minTpr);
+  // Sort by FPR to ensure proper order for trapezoidal rule
+  const sortedPairs = regionFpr.map((fpr, i) => ({ fpr, tpr: regionTpr[i] }))
+                              .sort((a, b) => a.fpr - b.fpr);
+  
+  const sortedFpr = sortedPairs.map(p => p.fpr);
+  const sortedTpr = sortedPairs.map(p => p.tpr);
   
   // Calculate the partial AUC using trapezoidal rule
   let partialAuc = 0;
-  for (let i = 1; i < regionFpr.length; i++) {
-    partialAuc += (regionFpr[i] - regionFpr[i-1]) * (regionTpr[i] + regionTpr[i-1]) / 2;
+  for (let i = 1; i < sortedFpr.length; i++) {
+    const deltaFpr = sortedFpr[i] - sortedFpr[i-1];
+    const avgTpr = (sortedTpr[i] + sortedTpr[i-1]) / 2;
+    partialAuc += deltaFpr * (avgTpr - minTpr);
   }
+  // partialAuc = calculateAUC(regionFpr, regionTpr);
+  console.log(partialAuc);
+
+  // Normalize, sortedTpr)
+  // Subtract the area below minTpr (baseline correction)
+  const fprRange = Math.max(...regionFpr) ;
+  console.log(fprRange);
+  console.log(Math.min(...regionTpr));
+  const baselineArea = fprRange * (1 - Math.min(...regionTpr) );
+  console.log(baselineArea);
+
+  // partialAuc -= baselineArea;
   
-  // Subtract the rectangle's bottom part
-  partialAuc -= minTpr * (Math.max(...filteredFpr) - Math.min(...filteredFpr));
+  // The standardized partial AUC (normalized by the total possible area in the region)
+  const maxPossibleArea = fprRange * (1 - minTpr);
   
-  return partialAuc / rectArea;
+  // Return raw partial AUC (common approach) or normalized version
+  // For normalized: return maxPossibleArea > 0 ? partialAuc / maxPossibleArea : 0;
+  return partialAuc / baselineArea; // Return raw partial AUC, ensure non-negative
 };
 
 // Function to calculate posterior probabilities (Bayes' theorem)

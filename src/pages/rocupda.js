@@ -28,7 +28,7 @@ const tooltipData = {
   apar: {
     tooltip_text: "Applicability Area (ApAr) represents the range of disease prevalence values where using the test is optimal.",
     link_text: "Learn more about ApAr",
-    link_url: "#"
+    link_url: "https://pubmed.ncbi.nlm.nih.gov/38222359/"
   }
 };
 // Helper function to generate curve points (simplified version of Bezier curve)
@@ -842,7 +842,7 @@ const Rocupda = () => {
                         optimalPointFpr={optimalPointFpr}
                         optimalPointTpr={optimalPointTpr}
                         optimalCutoff={optimalCutoff}
-                        area={area}
+                        area={dataType === 'imported' ? area : 'NA'}
                         tooltipData={tooltipData.apar}
                         width='40vw'
                         height='45vh'

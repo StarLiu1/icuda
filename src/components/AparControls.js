@@ -11,6 +11,8 @@ const AparControls = ({
   onDataTypeChange,
   onFileUpload,
   cutoff,
+  cutoffMin,
+  cutoffMax,
   onCutoffChange,
   uTP,
   onUTPChange,
@@ -46,11 +48,11 @@ const AparControls = ({
         </select>
       </div>
       
-      <div style={{ paddingLeft: '10px' }}>
+      <div style={{ paddingLeft: '0px' }}>
         {dataType === 'imported' ? (
           <div 
             style={{ 
-              width: '98.5%',
+              width: '100%',
               height: '58px',
               lineHeight: '60px',
               borderWidth: '1px',
@@ -148,8 +150,8 @@ const AparControls = ({
         <div style={{ width: '100%' }}>
           <input 
             type="range"
-            min={-5}
-            max={5}
+            min={cutoffMin}
+            max={cutoffMax}
             step={0.01}
             value={cutoff}
             onChange={onCutoffChange}
@@ -225,7 +227,7 @@ const AparControls = ({
         
         <h4 style={{ marginTop: 5 }}>{optimalCutoffText}</h4>
       </div>
-      <ReportGenerator
+      {/* <ReportGenerator
         rocData={rocData}
         tprValue={tprValue}
         fprValue={fprValue}
@@ -251,7 +253,7 @@ const AparControls = ({
         predictions={predictions}
         trueLabels={trueLabels}
         style={{ marginTop: '15px' }}
-      />
+      /> */}
     </div>
   );
 };
