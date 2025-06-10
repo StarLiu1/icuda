@@ -447,8 +447,10 @@ const ApAr = () => {
       {isLoading && (
         <LoadingOverlay 
         text="Welcome to the ApAr dashboard!
-        <br /><br />
-        Click anywhere to dismiss or this message will disappear automatically."
+                <br /><br />
+                Currently undergoing optimization. Performance is dependent on your machine's compute. 
+                  <br /><br />
+                Click anywhere to dismiss or this message will disappear automatically."
         onHide={handleLoadingClick}
         />
       )}
