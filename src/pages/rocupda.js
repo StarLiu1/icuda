@@ -513,7 +513,9 @@ const Rocupda = () => {
     <div className="main-content">
       {isLoading && (
         <LoadingOverlay 
-          text="Welcome to the home dashboard!
+          text="Welcome to the home dashboard! 
+                <br /><br />
+                Currently undergoing optimization. Performance is dependent on your machine's compute. 
                   <br /><br />
                 Click anywhere to dismiss or this message will disappear automatically."
           onHide={handleLoadingClick}
