@@ -2,7 +2,7 @@
 
 # iCUDA - Interactive Clinical Utility Decision Analytic Dashboard
 
-## About This Dashboard ([Temp URL]([[https://pubmed.ncbi.nlm.nih.gov/38222359/](https://icuda-cah8f2cfgzcba8fn.eastus2-01.azurewebsites.net/)]) ** Undergoing optimization)
+## About This Dashboard [Temporary Link]([https://pubmed.ncbi.nlm.nih.gov/38222359/](https://icuda-cah8f2cfgzcba8fn.eastus2-01.azurewebsites.net/)) **undergoing optimization
 
 Driven by **decision analysis** and **utility theory**, this dashboard is designed to be intuitive and interactive, allowing users to visualize and analyze the utility of machine learning (ML) models in various contexts. It focuses on evaluating the **success and failure modes** of these models in the target context.
 
