@@ -76,15 +76,15 @@ const AparControls = ({
         ) : (
           <div style={{ 
             width: '98.5%',
-            height: '58px',
-            lineHeight: '60px',
+            height: '40px',
+            lineHeight: '40px',
             borderWidth: '1px',
             borderStyle: 'dashed',
             borderRadius: '5px',
             textAlign: 'center',
             marginBottom: '10px'
           }}>
-            To upload data, select "Import Data" from dropdown
+            To import data, select from dropdown
           </div>
         )}
         
